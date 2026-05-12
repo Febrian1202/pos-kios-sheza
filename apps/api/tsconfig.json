@@ -27,5 +27,13 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@schema/*": [
+        "./src/db/schema/*"
+      ]
+    }
   }
 }
