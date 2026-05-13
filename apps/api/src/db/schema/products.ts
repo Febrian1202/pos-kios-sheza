@@ -3,6 +3,7 @@ import { relations } from "drizzle-orm";
 import { tenants } from "@schema/tenants";
 import { categories } from "@schema/categories";
 import { transactionItems } from "@schema/transactionItems";
+
 export const products = pgTable("products", {
   id: uuid("id").defaultRandom().primaryKey(),
   tenantId: uuid("tenant_id").references(() => tenants.id, { onDelete: "cascade" }),
@@ -13,7 +14,7 @@ export const products = pgTable("products", {
   unit: varchar("unit", { length: 255 }),
   stockQty: integer("stock_qty"),
   isActive: boolean("is_active").default(true),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
 })
 
 // Relations

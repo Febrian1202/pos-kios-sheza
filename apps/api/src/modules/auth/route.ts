@@ -5,7 +5,7 @@ import jwt from "@elysiajs/jwt";
 import { getUser, verifyUsers } from "./service";
 import { authPlugin } from "@/plugins/auth";
 
-export const authRoute = new Elysia({ prefix: "/auth" })
+export const authRoutes = new Elysia({ prefix: "/auth" })
   .error({
     LOGIN_ERROR: LoginError,
     SESSION_ERROR: SessionError,
@@ -16,8 +16,10 @@ export const authRoute = new Elysia({ prefix: "/auth" })
       return { success: false, message: error.message };
     }
 
-    set.status = 500;
-    return { success: false, message: "Something wrong with the server" }
+    if (code === "UNKNOWN") {
+      set.status = 500;
+      return { success: false, message: "Something wrong with the server" }
+    }
   })
   .use(jwt({
     secret: Bun.env.JWT_SECRET ?? "uaregay",
