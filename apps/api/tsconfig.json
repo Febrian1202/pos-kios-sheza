@@ -36,6 +36,9 @@
       ],
       "@db": [
         "./src/db/index.ts"
+      ],
+      "@modules/*": [
+        "./src/modules/*"
       ]
     }
   }
