@@ -33,6 +33,12 @@
       ],
       "@schema/*": [
         "./src/db/schema/*"
+      ],
+      "@db": [
+        "./src/db/index.ts"
+      ],
+      "@modules/*": [
+        "./src/modules/*"
       ]
     }
   }

@@ -1,4 +1,4 @@
-import { db } from ".";
+import { db } from "@db";
 import { products, tenants, users, categories } from "@schema/index";
 
 const main = async () => {
