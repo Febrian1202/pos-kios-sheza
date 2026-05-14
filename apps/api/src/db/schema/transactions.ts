@@ -7,11 +7,11 @@ import { transactionItems } from "@schema/transactionItems";
 export const transactions = pgTable("transactions", {
   id: uuid("id").defaultRandom().primaryKey(),
   tenantId: uuid("tenant_id").references(() => tenants.id, { onDelete: "cascade" }),
-  cashierId: uuid("cashier_id").references(() => users.id, { onDelete: "cascade" }),
+  cashierId: uuid("cashier_id").references(() => users.id, { onDelete: "set null" }),
   trxNumber: varchar("trx_number", { length: 255 }).unique(),
-  totalAmount: decimal("total_amount"),
-  amountPaid: decimal("amount_paid"),
-  changeAmount: decimal("change_amount"),
+  totalAmount: decimal("total_amount").notNull(),
+  amountPaid: decimal("amount_paid").notNull(),
+  changeAmount: decimal("change_amount").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 })
 

@@ -28,7 +28,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
   }))
   .post(
     "/login",
-    async ({ body, jwt, set }) => {
+    async ({ body, jwt }) => {
       const user = await verifyUsers(body.email, body.password);
       const token = await jwt.sign({
         sub: user.id,

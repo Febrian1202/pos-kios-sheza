@@ -1,14 +1,19 @@
 import { Elysia } from "elysia";
 import jwt from "@elysiajs/jwt";
 import bearer from "@elysia/bearer";
-import { AuthError } from "./error";
+import { AuthError, ForbiddenError } from "./error";
 
 export const authPlugin = new Elysia({ name: "auth" })
-  .error({ AUTH_FAILED: AuthError })
+  .error({ AUTH_FAILED: AuthError, FORBIDDEN: ForbiddenError })
   .onError(({ code, error, set }) => {
     if (code === "AUTH_FAILED") {
       set.status = 401;
       return { success: false, message: error.message };
+    }
+
+    if (code === "FORBIDDEN") {
+      set.status = 403;
+      return { success: false, message: error.message }
     }
   })
   .use(jwt({ name: "jwt", secret: Bun.env.JWT_SECRET! }))
@@ -26,3 +31,9 @@ export const authPlugin = new Elysia({ name: "auth" })
       role: payload.role as string,
     };
   });
+
+export const adminGuard = new Elysia({ name: "admin-guard" })
+  .use(authPlugin)
+  .onBeforeHandle(({ role }) => {
+    if (role !== "admin") throw new ForbiddenError();
+  })

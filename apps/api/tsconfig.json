@@ -39,6 +39,9 @@
       ],
       "@modules/*": [
         "./src/modules/*"
+      ],
+      "@helper": [
+        "./src/helper/index.ts"
       ]
     }
   }
