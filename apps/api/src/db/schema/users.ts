@@ -14,6 +14,7 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
 })
 
 // Relation 

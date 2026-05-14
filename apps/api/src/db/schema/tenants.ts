@@ -9,11 +9,12 @@ import { dailySummaries } from "@schema/dailySummaries";
 
 export const tenants = pgTable("multi-tenant", {
   id: uuid("id").defaultRandom().primaryKey(),
-  name: text('name'),
-  slug: varchar("slug", { length: 255 }).unique(),
-  plan: varchar("plan", { length: 255 }),
+  name: text('name').notNull(),
+  slug: varchar("slug", { length: 255 }).unique().notNull(),
+  plan: varchar("plan", { length: 255 }).notNull().default("free"),
   isActive: boolean("is_active").default(false),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
 })
 
 // Relations

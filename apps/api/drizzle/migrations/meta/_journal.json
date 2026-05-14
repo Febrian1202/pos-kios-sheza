@@ -8,6 +8,34 @@
       "when": 1778510890347,
       "tag": "0000_late_lady_bullseye",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778694114469,
+      "tag": "0001_public_lake",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778754406515,
+      "tag": "0002_lonely_komodo",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778754493243,
+      "tag": "0003_free_shooting_star",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778769961548,
+      "tag": "0004_magenta_hairball",
+      "breakpoints": true
     }
   ]
 }
