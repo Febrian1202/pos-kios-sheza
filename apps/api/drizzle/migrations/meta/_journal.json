@@ -36,6 +36,13 @@
       "when": 1778769961548,
       "tag": "0004_magenta_hairball",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778774315600,
+      "tag": "0005_curly_squadron_sinister",
+      "breakpoints": true
     }
   ]
 }

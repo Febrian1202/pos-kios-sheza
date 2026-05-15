@@ -12,6 +12,7 @@ export const transactions = pgTable("transactions", {
   totalAmount: decimal("total_amount").notNull(),
   amountPaid: decimal("amount_paid").notNull(),
   changeAmount: decimal("change_amount").notNull(),
+  paymentMethod: varchar("payment_method").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 })
 

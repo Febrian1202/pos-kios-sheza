@@ -15,11 +15,6 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
       set.status = 401;
       return { success: false, message: error.message };
     }
-
-    if (code === "UNKNOWN") {
-      set.status = 500;
-      return { success: false, message: "Something wrong with the server" }
-    }
   })
   .use(jwt({
     secret: Bun.env.JWT_SECRET ?? "uaregay",

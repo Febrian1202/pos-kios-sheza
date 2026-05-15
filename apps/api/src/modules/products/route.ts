@@ -1,15 +1,13 @@
 import { authPlugin, adminGuard } from "@/plugins/auth";
 import Elysia from "elysia";
-import { schemaQueryProduct, schemaQueryProductDetail, schemaBodyProduct } from "./schema";
-import { getProduct, getProductDetail, postProduct } from "./service";
+import { schemaQueryProduct, schemaQueryProductDetail, schemaBodyProduct, schemaBodyUpdateProduct, schemaQueryUpdateProduct } from "./schema";
+import { getProduct, getProductDetail, postProduct, patchProduct } from "./service";
 import { ProductNotFoundError } from "./error";
-import { ConflictError } from "@/plugins/error";
 
 export const productRoutes = new Elysia({ prefix: "/products" })
   .use(authPlugin)
   .error({
     "PRODUCT_NOT_FOUND": ProductNotFoundError,
-    "CONFLICT": ConflictError,
   })
   .onError(({ code, error, set }) => {
     if (code === "PRODUCT_NOT_FOUND") {
@@ -53,3 +51,15 @@ export const productRoutes = new Elysia({ prefix: "/products" })
   }, {
     body: schemaBodyProduct
   })
+  .patch("/:id", async ({ body, tenantId, params: { id }, set }) => {
+    const data = await patchProduct(id, tenantId, body);
+
+    return {
+      success: true,
+      message: "Patching product data success!",
+      data: data
+    }
+  }, {
+    body: schemaBodyUpdateProduct,
+    params: schemaQueryUpdateProduct,
+  });
