@@ -3,9 +3,9 @@ import { schemaBodyLogin } from "./schema";
 import { LoginError, SessionError } from "./error";
 import jwt from "@elysiajs/jwt";
 import { getUser, verifyUsers } from "./service";
-import { authPlugin } from "@/plugins/auth";
+import { authPlugin } from "@plugin";
 
-export const authRoutes = new Elysia({ prefix: "/auth" })
+export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
   .error({
     LOGIN_ERROR: LoginError,
     SESSION_ERROR: SessionError,

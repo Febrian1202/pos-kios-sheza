@@ -9,16 +9,26 @@ import { type ArgsProduct, type ArgsProductUpdate } from "./schema";
 export const getProduct = async (tenantId: string, search?: string, barcode?: string, categoryId?: string) => {
   const filters = [eq(products.tenantId, tenantId)];
 
-  if (search) {
-    filters.push(ilike(products.name, `%${search}%`));
-  }
+  if (search) filters.push(ilike(products.name, `%${search}%`));
+
 
   if (barcode) filters.push(eq(products.barcode, barcode));
 
   if (categoryId) filters.push(eq(products.categoryId, categoryId));
 
   const result = await db.query.products.findMany({
-    where: and(...filters),
+    columns: {
+      id: true,
+      name: true,
+      barcode: true,
+      sellingPrice: true,
+      stockQty: true,
+      unit: true,
+      categoryId: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    where: and(...filters, eq(products.isActive, true)),
     orderBy: desc(products.createdAt)
   })
 

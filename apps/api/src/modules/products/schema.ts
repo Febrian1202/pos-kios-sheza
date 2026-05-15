@@ -17,7 +17,7 @@ export const schemaQueryProductDetail = t.Object({
 
 const unfilteredBodyProduct = createInsertSchema(products, {
   barcode: t.Optional(t.String()),
-})
+});
 
 export const schemaBodyProduct = t.Omit(unfilteredBodyProduct, ["id", "createdAt", "updatedAt", "isActive", "slug", "tenantId"]);
 

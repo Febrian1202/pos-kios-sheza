@@ -12,7 +12,7 @@ export const tenants = pgTable("multi-tenant", {
   name: text('name').notNull(),
   slug: varchar("slug", { length: 255 }).unique().notNull(),
   plan: varchar("plan", { length: 255 }).notNull().default("free"),
-  isActive: boolean("is_active").default(false),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
 })
