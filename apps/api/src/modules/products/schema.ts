@@ -11,7 +11,7 @@ export const schemaQueryProduct = t.Object({
 export const schemaQueryProductDetail = t.Object({
   id: t.String({
     format: "uuid",
-    error: "Product ID format doesn't valid (must be UUID)",
+    error: validationDetail("Product ID format doesn't valid (must be UUID)"),
   }),
 });
 

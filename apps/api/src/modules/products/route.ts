@@ -1,7 +1,7 @@
 import { authPlugin, adminGuard } from "@/plugins/auth";
 import Elysia from "elysia";
 import { schemaQueryProduct, schemaQueryProductDetail, schemaBodyProduct, schemaBodyUpdateProduct, schemaQueryUpdateProduct } from "./schema";
-import { getProduct, getProductDetail, postProduct, patchProduct } from "./service";
+import { getProduct, getProductDetail, postProduct, patchProduct, softDeleteProduct } from "./service";
 import { ProductNotFoundError } from "./error";
 
 export const productRoutes = new Elysia({ prefix: "/products" })
@@ -51,7 +51,7 @@ export const productRoutes = new Elysia({ prefix: "/products" })
   }, {
     body: schemaBodyProduct
   })
-  .patch("/:id", async ({ body, tenantId, params: { id }, set }) => {
+  .patch("/:id", async ({ body, tenantId, params: { id } }) => {
     const data = await patchProduct(id, tenantId, body);
 
     return {
@@ -61,5 +61,16 @@ export const productRoutes = new Elysia({ prefix: "/products" })
     }
   }, {
     body: schemaBodyUpdateProduct,
+    params: schemaQueryUpdateProduct,
+  })
+  .delete("/:id", async ({ params: { id }, tenantId }) => {
+    const data = await softDeleteProduct(id, tenantId);
+
+    return {
+      success: true,
+      message: "Success deleting data product!",
+      data: data
+    }
+  }, {
     params: schemaQueryUpdateProduct,
   });

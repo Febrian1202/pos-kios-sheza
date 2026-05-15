@@ -162,3 +162,16 @@ export const patchProduct = async (id: string, tenantId: string, args: ArgsProdu
 
   return updatedProduct;
 }
+
+export const softDeleteProduct = async (id: string, tenantId: string) => {
+  const [deletedProduct] = await db.update(products).set({
+    isActive: false,
+  }).where(and(
+    eq(products.tenantId, tenantId),
+    eq(products.id, id),
+  )).returning()
+
+  if (!deletedProduct) throw new ProductNotFoundError("Data product not found!");
+
+  return deletedProduct;
+}
