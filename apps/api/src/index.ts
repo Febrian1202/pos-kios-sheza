@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import cors from "@elysia/cors";
-import { authRoutes, productRoutes } from "@modules/index.routes";
+import { authRoutes, categoriesRoutes, productRoutes } from "@modules/index.routes";
 import { ConflictError } from "./plugins/error";
 
 const app = new Elysia()
@@ -22,6 +22,7 @@ const app = new Elysia()
   .get("/health", () => ({ status: 'ok', ts: Date.now() }))
   .use(authRoutes)
   .use(productRoutes)
+  .use(categoriesRoutes)
   .listen(Bun.env.PORT ?? 3000);
 
 console.log(

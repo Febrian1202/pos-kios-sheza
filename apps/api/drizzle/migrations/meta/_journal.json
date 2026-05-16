@@ -57,6 +57,20 @@
       "when": 1778861631879,
       "tag": "0007_parched_cargill",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1778925091267,
+      "tag": "0008_magical_venus",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1778943415726,
+      "tag": "0009_spicy_guardsmen",
+      "breakpoints": true
     }
   ]
 }

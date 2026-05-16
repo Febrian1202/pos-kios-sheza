@@ -9,3 +9,9 @@ export class SessionError extends Error {
     super(message);
   }
 }
+
+export class RegisterError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}

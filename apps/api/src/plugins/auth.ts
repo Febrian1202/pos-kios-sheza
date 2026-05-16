@@ -3,6 +3,18 @@ import jwt from "@elysiajs/jwt";
 import bearer from "@elysia/bearer";
 import { AuthError, ForbiddenError } from "./error";
 
+export const jwtAccessSetup = jwt({
+  name: "accessJwt",
+  secret: Bun.env.JWT_ACCESS_SECRET!,
+  exp: "15m",
+})
+
+export const jwtRefreshSetup = jwt({
+  name: "refreshJwt",
+  secret: Bun.env.JWT_REFRESH_SECRET!,
+  exp: "7d",
+})
+
 export const authPlugin = new Elysia({ name: "auth" })
   .error({ AUTH_FAILED: AuthError, FORBIDDEN: ForbiddenError })
   .onError(({ code, error, set }) => {
@@ -16,12 +28,12 @@ export const authPlugin = new Elysia({ name: "auth" })
       return { success: false, message: error.message }
     }
   })
-  .use(jwt({ name: "jwt", secret: Bun.env.JWT_SECRET! }))
+  .use(jwtAccessSetup)
   .use(bearer())
-  .derive({ as: "global" }, async ({ jwt, bearer }) => {
+  .derive({ as: "global" }, async ({ accessJwt, bearer }) => {
     if (!bearer) throw new AuthError("Unauthorized");
 
-    const payload = await jwt.verify(bearer);
+    const payload = await accessJwt.verify(bearer);
     if (!payload) throw new AuthError("Invalid token");
 
     // tenantId, userId, role tersedia di semua route
