@@ -44,18 +44,13 @@ export const getUser = async (userId: string) => {
       email: true,
       role: true,
       tenantId: true,
+      refreshToken: true,
     }
   });
 
   if (!user) throw new SessionError("User not found!");
 
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    tenantId: user.tenantId,
-  }
+  return user;
 }
 
 export const registerBusiness = async (args: ArgsRegister) => {
@@ -107,7 +102,7 @@ export const registerBusiness = async (args: ArgsRegister) => {
       passwordHash: hashedPassword,
       role: "admin",
       isActive: true,
-    }).returning({ id: users.id, name: users.name, email: users.email });
+    }).returning({ id: users.id, name: users.name, email: users.email, role: users.role });
 
     return {
       store: newTenant,
@@ -116,4 +111,10 @@ export const registerBusiness = async (args: ArgsRegister) => {
   })
 
   return result;
+}
+
+export const updateRefreshToken = async (id: string, token: string | null) => {
+  await db.update(users).set({
+    refreshToken: token
+  }).where(eq(users.id, id));
 }
