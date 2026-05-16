@@ -1,8 +1,8 @@
 import { Elysia } from "elysia";
-import { schemaBodyLogin } from "./schema";
+import { schemaBodyLogin, schemaBodyRegister } from "./schema";
 import { LoginError, SessionError } from "./error";
 import jwt from "@elysiajs/jwt";
-import { getUser, verifyUsers } from "./service";
+import { getUser, registerBusiness, verifyUsers } from "./service";
 import { authPlugin } from "@plugin";
 
 export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
@@ -50,6 +50,19 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
       body: schemaBodyLogin,
     },
   )
+  .post("/register", async ({ body, set }) => {
+    const result = await registerBusiness(body);
+
+    set.status = 201;
+
+    return {
+      success: true,
+      message: `Registration success, welcome to ${result.store?.name}!`,
+      data: result
+    }
+  }, {
+    body: schemaBodyRegister
+  })
   .use(authPlugin)
   .get("/me", async ({ userId }) => {
     const user = await getUser(userId);

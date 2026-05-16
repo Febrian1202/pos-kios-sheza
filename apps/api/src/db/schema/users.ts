@@ -10,6 +10,7 @@ export const users = pgTable("users", {
     references(() => tenants.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 255 }),
+  emailVerifiedAt: timestamp("email_verified_at"),
   role: varchar("role", { length: 255 }),
   passwordHash: text("password_hash"),
   isActive: boolean("is_active").default(true),

@@ -1,7 +1,10 @@
 import { db } from "@/db"
-import { users } from "@/db/schema"
+import { tenants, users } from "@/db/schema"
 import { and, eq } from "drizzle-orm"
 import { LoginError, SessionError } from "./error";
+import type { ArgsRegister } from "./schema";
+import { ConflictError } from "@/plugins";
+import { slugify } from "@/helper";
 
 export const verifyUsers = async (userEmail: string, userPassword: string) => {
   const user = await db.query.users.findFirst({
@@ -53,4 +56,64 @@ export const getUser = async (userId: string) => {
     role: user.role,
     tenantId: user.tenantId,
   }
+}
+
+export const registerBusiness = async (args: ArgsRegister) => {
+  // Cek email
+  const existUser = await db.query.users.findFirst({
+    columns: {
+      name: true,
+      email: true,
+    },
+    where: eq(users.email, args.email),
+  });
+
+  if (existUser) throw new ConflictError("Email already registered!");
+
+  // Buat slug, pastikan unique
+  let storeSlug = slugify(args.storeName);
+  const existTenant = await db.query.tenants.findFirst({
+    columns: {
+      slug: true,
+    },
+    where: eq(tenants.slug, storeSlug),
+  });
+
+  if (existTenant) {
+    storeSlug = `${storeSlug}-${Math.random().toString(36).substring(2, 6)}`;
+  }
+
+  // Hash password
+  const hashedPassword = await Bun.password.hash(args.password, {
+    algorithm: "bcrypt",
+    cost: 10,
+  });
+
+  // Transaction 
+  const result = await db.transaction(async (tx) => {
+    // Buat tenant 
+    const [newTenant] = await tx.insert(tenants).values({
+      name: args.storeName,
+      slug: storeSlug,
+      plan: "free",
+      isActive: true,
+    }).returning({ id: tenants.id, name: tenants.name, slug: tenants.slug });
+
+    // Buat user admin dan kaitkan dengan tenant yang barusan di query
+    const [newUser] = await tx.insert(users).values({
+      name: args.userName,
+      tenantId: newTenant?.id,
+      email: args.email,
+      passwordHash: hashedPassword,
+      role: "admin",
+      isActive: true,
+    }).returning({ id: users.id, name: users.name, email: users.email });
+
+    return {
+      store: newTenant,
+      user: newUser,
+    }
+  })
+
+  return result;
 }
