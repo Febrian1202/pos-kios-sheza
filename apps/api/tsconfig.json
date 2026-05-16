@@ -42,6 +42,9 @@
       ],
       "@helper": [
         "./src/helper/index.ts"
+      ],
+      "@plugin": [
+        "./src/plugins/index.ts"
       ]
     }
   }
