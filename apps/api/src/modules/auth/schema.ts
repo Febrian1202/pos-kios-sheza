@@ -19,7 +19,6 @@ export const schemaBodyRegister = t.Object({
 });
 
 export const schemaBodyRefresh = t.Object({
-  id: t.String({ format: "uuid", error: validationDetail("ID must be in UUID format!") }),
   refreshToken: t.String({ error: validationDetail("Refresh Token must be in string type!") }),
 })
 
