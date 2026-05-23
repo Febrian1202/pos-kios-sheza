@@ -16,3 +16,13 @@ export const bodySchemaTransaction = t.Object({
 });
 
 export type ArgsTransaction = Static<typeof bodySchemaTransaction>
+
+export const querySchemaTransaction = t.Object({
+  date: t.Optional(t.String()),
+  from: t.Optional(t.String()),
+  to: t.Optional(t.String()),
+  page: t.Numeric({ default: 1, error: validationDetail("Page must be a numeric") }),
+  limit: t.Numeric({ default: 10, error: validationDetail("Limit must be a numeric") }),
+});
+
+export type ArgsGetTransaction = Static<typeof querySchemaTransaction>

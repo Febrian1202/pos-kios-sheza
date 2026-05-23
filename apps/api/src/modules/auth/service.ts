@@ -7,6 +7,7 @@ import { ConflictError } from "@/plugins";
 import { slugify } from "@/helper";
 
 export const verifyUsers = async (userEmail: string, userPassword: string) => {
+  const normalizedEmail = userEmail.toLowerCase().trim();
   const user = await db.query.users.findFirst({
     columns: {
       id: true,
@@ -17,7 +18,7 @@ export const verifyUsers = async (userEmail: string, userPassword: string) => {
       passwordHash: true,
     },
     where: and(
-      eq(users.email, userEmail),
+      eq(users.email, normalizedEmail),
       eq(users.isActive, true),
     )
   });
@@ -37,7 +38,7 @@ export const verifyUsers = async (userEmail: string, userPassword: string) => {
 
 export const getUser = async (userId: string) => {
   const user = await db.query.users.findFirst({
-    where: eq(users.id, userId),
+    where: and(eq(users.id, userId), eq(users.isActive, true)),
     columns: {
       id: true,
       name: true,
@@ -54,13 +55,14 @@ export const getUser = async (userId: string) => {
 }
 
 export const registerBusiness = async (args: ArgsRegister) => {
+  const normalizedEmail = args.email.toLowerCase().trim();
   // Cek email
   const existUser = await db.query.users.findFirst({
     columns: {
       name: true,
       email: true,
     },
-    where: eq(users.email, args.email),
+    where: eq(users.email, normalizedEmail),
   });
 
   if (existUser) throw new ConflictError("Email already registered!");
@@ -98,7 +100,7 @@ export const registerBusiness = async (args: ArgsRegister) => {
     const [newUser] = await tx.insert(users).values({
       name: args.userName,
       tenantId: newTenant?.id,
-      email: args.email,
+      email: normalizedEmail,
       passwordHash: hashedPassword,
       role: "admin",
       isActive: true,

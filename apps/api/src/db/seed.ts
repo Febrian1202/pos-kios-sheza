@@ -28,6 +28,7 @@ const main = async () => {
     await db.insert(users).values([
       {
         tenantId: newTenant.id,
+        name: "Admin Kios Sheza",
         email: "admin@kiossheza.com",
         role: "admin",
         passwordHash: await Bun.password.hash("password", {
@@ -37,6 +38,7 @@ const main = async () => {
       },
       {
         tenantId: newTenant.id,
+        name: "Kasir Kios Sheza",
         email: "kasir@kiossheza.com",
         role: "cashier",
         passwordHash: await Bun.password.hash("password", {

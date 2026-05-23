@@ -1,8 +1,8 @@
 import { ConflictError } from "@/plugins";
-import type { ArgsTransaction } from "./schema";
+import type { ArgsTransaction, ArgsGetTransaction } from "./schema";
 import { db } from "@/db";
 import { products, transactionItems, transactions } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, sql } from "drizzle-orm";
 
 export const createTransaction = async (tenantId: string, cashierId: string, args: ArgsTransaction) => {
   // Hitung total harga
@@ -70,5 +70,73 @@ export const createTransaction = async (tenantId: string, cashierId: string, arg
     trxNumber: result.trxNumber,
     totalAmount,
     changeAmount,
+  }
+}
+
+export const getTransactions = async (tenantId: string, query: ArgsGetTransaction) => {
+  // Destructuring
+  const { to, from, date, limit, page } = query;
+
+  const filters = [eq(transactions.tenantId, tenantId)];
+
+  // check query date
+  if (date) {
+    // cari transaksi dari jam 00:00 sampai 23:59
+    const startDate = new Date(`${date}T00:00:00.000Z`);
+    const endDate = new Date(`${date}T23:59:59.999Z`);
+
+    // push ke daftar filters
+    filters.push(gte(transactions.createdAt, startDate));
+    filters.push(lte(transactions.createdAt, endDate));
+  } else if (from && to) {
+    // cari rentang hari 
+    const startDate = new Date(`${from}T00:00:00.000Z`);
+    const endDate = new Date(`${to}T23:59:59.999Z`);
+
+    // push ke daftar filters
+    filters.push(gte(transactions.createdAt, startDate));
+    filters.push(lte(transactions.createdAt, endDate));
+  }
+
+  // Rumus paginasi
+  const offset = (page - 1) * limit;
+
+  // Tarik data dari database sesuai offset
+  const data = await db.query.transactions.findMany({
+    where: and(...filters),
+    limit: limit,
+    offset: offset,
+    orderBy: desc(transactions.createdAt),
+    with: {
+      cashier: {
+        columns: { name: true }
+      },
+      items: {
+        with: {
+          product: {
+            columns: { name: true }
+          }
+        }
+      }
+    }
+  });
+
+  // Hitung seluruh total data yang sesuai dengan filter (untuk pagination frontend)
+  const countResult = await db.select({ totalData: count() })
+    .from(transactions)
+    .where(and(...filters));
+
+  const totalData = countResult[0]?.totalData ?? 0
+
+  const totalPages = Math.ceil(totalData / limit)
+
+  return {
+    data: data,
+    meta: {
+      page: page,
+      limit: limit,
+      totalData: totalData,
+      totalPages: totalPages
+    }
   }
 }
