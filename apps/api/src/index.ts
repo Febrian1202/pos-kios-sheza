@@ -1,10 +1,15 @@
 import { Elysia } from "elysia";
-import cors from "@elysia/cors";
-import { authRoutes, categoriesRoutes, productRoutes } from "@modules/index.routes";
-import { ConflictError } from "./plugins/error";
+import {
+  authRoutes,
+  categoriesRoutes,
+  productRoutes,
+  transactionRoutes
+} from "@modules/index.routes";
+import { ConflictError } from "@plugin";
+import { corsPlugin } from "@plugin";
 
 const app = new Elysia()
-  .use(cors({ origin: Bun.env.WEB_URL }))
+  .use(corsPlugin)
   .error({
     "CONFLICT": ConflictError,
   })
@@ -23,6 +28,7 @@ const app = new Elysia()
   .use(authRoutes)
   .use(productRoutes)
   .use(categoriesRoutes)
+  .use(transactionRoutes)
   .listen(Bun.env.PORT ?? 3000);
 
 console.log(
