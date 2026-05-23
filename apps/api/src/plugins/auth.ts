@@ -6,7 +6,7 @@ import { AuthError, ForbiddenError } from "./error";
 export const jwtAccessSetup = jwt({
   name: "accessJwt",
   secret: Bun.env.JWT_ACCESS_SECRET!,
-  exp: "15m",
+  exp: "5m",
 })
 
 export const jwtRefreshSetup = jwt({

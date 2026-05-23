@@ -37,7 +37,7 @@ export const productRoutes = new Elysia({ prefix: "/products", name: "Product Ro
   }, {
     params: schemaQueryProductDetail
   })
-  .use(adminGuard)
+  .use(adminGuard) // Middleware Admin
   .post("/", async ({ body, tenantId, set }) => {
     const data = await postProduct({ ...body, tenantId })
 

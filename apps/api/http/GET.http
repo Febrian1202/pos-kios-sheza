@@ -1,0 +1,51 @@
+### 
+
+GET http://localhost:3000/health HTTP/1.1
+
+
+### 
+
+POST http://localhost:3000/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "rusman@sembakorusman.com",
+  "password": "rusmanracing123"
+}
+
+
+### 
+
+GET http://localhost:3000/auth/me HTTP/1.1
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkMGYwNTllNS1lNzhhLTQ0ZTktYTEzNC05Mjk5YjFhNjFiMDQiLCJ0ZW5hbnRJZCI6IjFjNDc5ZTU2LTNjYzgtNDA4Yi05YjQ3LWEwNzk2ZWI5YzU0MyIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc3OTU1MjYyNiwiaWF0IjoxNzc5NTUxNzI2fQ.HjuojwaeeFga_VEVWA2KrFb3n1vOdg0tBsInFjwdwA4
+
+
+### 
+
+POST http://localhost:3000/auth/refresh HTTP/1.1
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ODljMWRmOS1jZGQ1LTQxNDUtOTQyNy04NTdjMjlmYWMwYjYiLCJ0ZW5hbnRJZCI6IjYzNzQ5YzZjLTZhYTgtNDQ4NC05MmY2LTczM2QyMzM2ZmUyNyIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc4MDE1NTAzNCwiaWF0IjoxNzc5NTUwMjM0fQ.HNxfsT_ACB8uVjIdh_CaKu3ClWKVkGlLryUhVnmxz5o"
+}
+
+
+### 
+
+POST localhost:3000/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "rusman@sembakorusman.com",
+  "password": "rusmanracing123",
+  "storeName": "Sembako Rusman",
+  "userName": "Rusman Bengkel"
+}
+
+
+### 
+
+POST localhost:3000/auth/logout HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkMGYwNTllNS1lNzhhLTQ0ZTktYTEzNC05Mjk5YjFhNjFiMDQiLCJ0ZW5hbnRJZCI6IjFjNDc5ZTU2LTNjYzgtNDA4Yi05YjQ3LWEwNzk2ZWI5YzU0MyIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc3OTU1MjYyNiwiaWF0IjoxNzc5NTUxNzI2fQ.HjuojwaeeFga_VEVWA2KrFb3n1vOdg0tBsInFjwdwA4
