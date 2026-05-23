@@ -26,3 +26,9 @@ export const querySchemaTransaction = t.Object({
 });
 
 export type ArgsGetTransaction = Static<typeof querySchemaTransaction>
+
+export const paramsSchemaTransaction = t.Object({
+  id: t.String({ format: "uuid", error: validationDetail("ID must be a UUID") })
+});
+
+export type ArgsGetTransactionDetail = Static<typeof paramsSchemaTransaction>

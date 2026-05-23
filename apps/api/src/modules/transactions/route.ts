@@ -1,7 +1,7 @@
 import Elysia from "elysia";
-import { bodySchemaTransaction, querySchemaTransaction } from "./schema";
+import { bodySchemaTransaction, querySchemaTransaction, paramsSchemaTransaction } from "./schema";
 import { authPlugin } from "@/plugins";
-import { createTransaction, getTransactions } from './service.ts';
+import { createTransaction, getTransactionDetail, getTransactions } from './service.ts';
 
 export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Transaction Routes" })
   .use(authPlugin)
@@ -28,4 +28,15 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Tr
     }
   }, {
     query: querySchemaTransaction
+  })
+  .get("/:id", async ({ params, tenantId }) => {
+    const result = await getTransactionDetail(tenantId, params);
+
+    return {
+      success: true,
+      message: "Get detail transaction success!",
+      data: result
+    }
+  }, {
+    params: paramsSchemaTransaction,
   })

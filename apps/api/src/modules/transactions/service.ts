@@ -1,5 +1,5 @@
 import { ConflictError } from "@/plugins";
-import type { ArgsTransaction, ArgsGetTransaction } from "./schema";
+import type { ArgsTransaction, ArgsGetTransaction, ArgsGetTransactionDetail } from "./schema";
 import { db } from "@/db";
 import { products, transactionItems, transactions } from "@/db/schema";
 import { and, count, desc, eq, gte, lte, sql } from "drizzle-orm";
@@ -139,4 +139,42 @@ export const getTransactions = async (tenantId: string, query: ArgsGetTransactio
       totalPages: totalPages
     }
   }
+}
+
+export const getTransactionDetail = async (tenantId: string, params: ArgsGetTransactionDetail) => {
+  const data = await db.query.transactions.findFirst({
+    columns: {
+      trxNumber: true,
+      totalAmount: true,
+      amountPaid: true,
+      changeAmount: true,
+      paymentMethod: true,
+      createdAt: true,
+    },
+    with: {
+      items: {
+        with: {
+          product: {
+            columns: {
+              id: true,
+              name: true,
+              createdAt: true,
+            }
+          }
+        },
+        columns: {
+          id: true,
+          qty: true,
+          unitPrice: true,
+          subtotal: true,
+          createdAt: true,
+        }
+      }
+    },
+    where: and(eq(transactions.tenantId, tenantId), eq(transactions.id, params.id))
+  });
+
+  if (!data) throw new ConflictError("Failed, data transaction doesn't exist")
+
+  return data;
 }
