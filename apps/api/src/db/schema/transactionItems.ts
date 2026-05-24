@@ -6,7 +6,7 @@ import { relations } from "drizzle-orm";
 export const transactionItems = pgTable("transaction_items", {
   id: uuid("id").defaultRandom().primaryKey(),
   transactionId: uuid("transaction_id").references(() => transactions.id, { onDelete: "cascade" }),
-  productId: uuid("product_id").references(() => products.id, { onDelete: "restrict" }),
+  productId: uuid("product_id").references(() => products.id, { onDelete: "restrict" }).notNull(),
   qty: integer("qty"),
   unitPrice: decimal("unit_price"),
   subtotal: decimal("subtotal"),

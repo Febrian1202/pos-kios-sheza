@@ -1,0 +1,1 @@
+ALTER TABLE "transactions" ADD COLUMN "status" varchar(50) DEFAULT 'success' NOT NULL;
