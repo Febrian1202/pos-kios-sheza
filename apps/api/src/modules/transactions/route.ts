@@ -1,7 +1,7 @@
 import Elysia from "elysia";
 import { bodySchemaTransaction, querySchemaTransaction, paramsSchemaTransaction } from "./schema";
-import { authPlugin } from "@/plugins";
-import { createTransaction, getTransactionDetail, getTransactions } from './service.ts';
+import { authPlugin, adminGuard } from "@plugin";
+import { createTransaction, getTransactionDetail, getTransactions, voidTransaction } from './service.ts';
 
 export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Transaction Routes" })
   .use(authPlugin)
@@ -36,6 +36,17 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Tr
       success: true,
       message: "Get detail transaction success!",
       data: result
+    }
+  }, {
+    params: paramsSchemaTransaction,
+  })
+  .use(adminGuard)
+  .post("/:id/void", async ({ params: { id }, tenantId }) => {
+    const result = await voidTransaction(tenantId, id);
+
+    return {
+      success: true,
+      message: `Transaction ${result.trxNumber} void success! (stock restored)`,
     }
   }, {
     params: paramsSchemaTransaction,
