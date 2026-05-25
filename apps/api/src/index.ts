@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import {
   authRoutes,
+  brilinkRoutes,
   categoriesRoutes,
   productRoutes,
   transactionRoutes
@@ -29,6 +30,7 @@ const app = new Elysia()
   .use(productRoutes)
   .use(categoriesRoutes)
   .use(transactionRoutes)
+  .use(brilinkRoutes)
   .listen(Bun.env.PORT ?? 3000);
 
 console.log(

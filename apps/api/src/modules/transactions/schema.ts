@@ -12,7 +12,7 @@ export const bodySchemaTransaction = t.Object({
     t.Literal("transfer"),
     t.Literal("qris"),
   ], { error: validationDetail("Payment method invalid!") }),
-  amountPaid: t.Number({ error: validationDetail("Amount Paid must be a  number!") })
+  amountPaid: t.Number({ error: validationDetail("Amount Paid must be a  number!") }),
 });
 
 export type ArgsTransaction = Static<typeof bodySchemaTransaction>
