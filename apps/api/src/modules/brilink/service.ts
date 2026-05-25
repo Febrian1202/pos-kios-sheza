@@ -1,6 +1,6 @@
 import { db } from "@db";
-import type { ArgsBrilink } from "./schema";
-import { and, eq } from "drizzle-orm";
+import type { ArgsBrilink, ArgsGetBrilink } from "./schema";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { brilinkTransactions } from "@schema/index";
 import { ConflictError } from "@plugin";
 
@@ -33,4 +33,46 @@ export const createBrilinkTransaction = async (tenantId: string, cashierId: stri
   if (!result) throw new ConflictError("Creating Brilink Transaction failed!");
 
   return result;
+}
+
+export const getBrilinkTransaction = async (tenantId: string, query: ArgsGetBrilink) => {
+  const { date, type } = query;
+  let filters = [eq(brilinkTransactions.tenantId, tenantId)];
+
+  if (date) {
+    const startDate = new Date(`${date}T00:00:00.000Z`);
+    const endDate = new Date(`${date}T23:59:59.999Z`);
+
+    filters.push(gte(brilinkTransactions.createdAt, startDate));
+    filters.push(lte(brilinkTransactions.createdAt, endDate));
+  }
+
+  if (type) {
+    filters.push(eq(brilinkTransactions.trxType, type))
+  }
+
+  const data = await db.query.brilinkTransactions.findMany({
+    columns: {
+      id: true,
+      trxType: true,
+      customerAmount: true,
+      adminFeeCharged: true,
+      agentCommission: true,
+      referenceNumber: true,
+      status: true,
+      notes: true,
+      createdAt: true
+    },
+    with: {
+      cashier: {
+        columns: {
+          name: true
+        }
+      }
+    },
+    where: and(...filters),
+    orderBy: desc(brilinkTransactions.createdAt)
+  });
+
+  return data;
 }

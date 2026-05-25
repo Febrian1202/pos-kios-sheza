@@ -3,7 +3,7 @@ import { createInsertSchema } from "drizzle-typebox";
 import { t, validationDetail, type Static } from "elysia";
 
 export const schemaQueryCategory = t.Object({
-  search: t.Optional(t.String())
+  search: t.Optional(t.String({ error: validationDetail("Search must be in string") }))
 });
 
 export const schemaParamsCategory = t.Object({

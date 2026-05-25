@@ -18,9 +18,9 @@ export const bodySchemaTransaction = t.Object({
 export type ArgsTransaction = Static<typeof bodySchemaTransaction>
 
 export const querySchemaTransaction = t.Object({
-  date: t.Optional(t.String()),
-  from: t.Optional(t.String()),
-  to: t.Optional(t.String()),
+  date: t.Optional(t.String({ format: "date", error: validationDetail("Date invalid") })),
+  from: t.Optional(t.String({ error: validationDetail("Must be in string") })),
+  to: t.Optional(t.String({ error: validationDetail("Must be in string") })),
   page: t.Numeric({ default: 1, error: validationDetail("Page must be a numeric") }),
   limit: t.Numeric({ default: 10, error: validationDetail("Limit must be a numeric") }),
 });
