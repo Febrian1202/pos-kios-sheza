@@ -4,7 +4,8 @@ import {
   brilinkRoutes,
   categoriesRoutes,
   productRoutes,
-  transactionRoutes
+  transactionRoutes,
+  reportRoutes
 } from "@modules/index.routes";
 import { ConflictError } from "@plugin";
 import { corsPlugin } from "@plugin";
@@ -31,6 +32,7 @@ const app = new Elysia()
   .use(categoriesRoutes)
   .use(transactionRoutes)
   .use(brilinkRoutes)
+  .use(reportRoutes)
   .listen(Bun.env.PORT ?? 3000);
 
 console.log(
