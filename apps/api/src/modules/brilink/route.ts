@@ -1,7 +1,11 @@
 import { authPlugin } from "@/plugins";
 import Elysia from "elysia";
-import { schemaBodyBrilink, schemaQueryBrilink } from "./schema";
-import { createBrilinkTransaction, getBrilinkTransaction } from "./service";
+import {
+  schemaBodyBrilink,
+  schemaQueryBrilink,
+  schemaQuerySummaryBrilink
+} from "./schema";
+import { createBrilinkTransaction, getBrilinkSummary, getBrilinkTransaction } from "./service";
 
 export const brilinkRoutes = new Elysia({ prefix: "/brilink", name: "Brilink Routes" })
   .use(authPlugin)
@@ -27,4 +31,15 @@ export const brilinkRoutes = new Elysia({ prefix: "/brilink", name: "Brilink Rou
     }
   }, {
     query: schemaQueryBrilink
+  })
+  .get("/summary", async ({ tenantId, query }) => {
+    const result = await getBrilinkSummary(tenantId, query);
+
+    return {
+      success: true,
+      message: "Get summary brilink success",
+      data: result
+    }
+  }, {
+    query: schemaQuerySummaryBrilink,
   })

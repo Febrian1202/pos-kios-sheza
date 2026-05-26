@@ -33,3 +33,9 @@ export const schemaQueryBrilink = t.Object({
 })
 
 export type ArgsGetBrilink = Static<typeof schemaQueryBrilink>
+
+export const schemaQuerySummaryBrilink = t.Object({
+  date: t.String({ format: "date", error: validationDetail("Date invalid!") })
+})
+
+export type ArgsGetSummaryBrilink = Static<typeof schemaQuerySummaryBrilink>
