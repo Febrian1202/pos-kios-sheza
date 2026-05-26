@@ -1,5 +1,5 @@
 import { db } from "@db";
-import type { ArgsBrilink, ArgsGetBrilink, ArgsGetSummaryBrilink } from "./schema";
+import type { ArgsBrilink, ArgsGetBrilink, ArgsGetBrilinkDetail, ArgsGetSummaryBrilink } from "./schema";
 import { and, count, desc, eq, gte, lte, sum } from "drizzle-orm";
 import { brilinkTransactions } from "@schema/index";
 import { ConflictError } from "@plugin";
@@ -124,4 +124,53 @@ export const getBrilinkSummary = async (tenantId: string, query: ArgsGetSummaryB
     grandTotalTransaction,
     breakdown
   }
+}
+
+export const getBrilinkTransactionDetail = async (tenantId: string, param: ArgsGetBrilinkDetail) => {
+  const { id } = param;
+
+  const data = await db.query.brilinkTransactions.findFirst({
+    where: and(eq(brilinkTransactions.tenantId, tenantId), eq(brilinkTransactions.id, id))
+  });
+
+  if (!data) throw new ConflictError("Failed, Brilink transaction not found!");
+
+  return data
+}
+
+export const voidBrilink = async (
+  tenantId: string,
+  params: ArgsGetBrilinkDetail
+) => {
+  const { id } = params
+  // Cek exist 
+  const transaction = await db.query.brilinkTransactions.findFirst({
+    where: and(
+      eq(brilinkTransactions.tenantId, tenantId),
+      eq(brilinkTransactions.id, id)
+    )
+  });
+
+  if (!transaction) throw new ConflictError("Brilink transaction not found!");
+
+  if (transaction.status === "void" || transaction.status === "failed") {
+    throw new ConflictError(`This transaction is already ${transaction.status}`);
+  }
+
+  // Ubah status menjadi void 
+  const [updatedTransaction] = await db.update(brilinkTransactions)
+    .set({
+      status: "void"
+    })
+    .where(and(
+      eq(brilinkTransactions.tenantId, tenantId),
+      eq(brilinkTransactions.id, id)
+    ))
+    .returning({
+      id: brilinkTransactions.id,
+      referenceNumber: brilinkTransactions.referenceNumber,
+      status: brilinkTransactions.status
+    });
+
+  return updatedTransaction;
 }

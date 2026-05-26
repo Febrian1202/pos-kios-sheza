@@ -47,6 +47,7 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Tr
     return {
       success: true,
       message: `Transaction ${result.trxNumber} void success! (stock restored)`,
+      data: result
     }
   }, {
     params: paramsSchemaTransaction,

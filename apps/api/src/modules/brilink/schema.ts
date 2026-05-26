@@ -39,3 +39,9 @@ export const schemaQuerySummaryBrilink = t.Object({
 })
 
 export type ArgsGetSummaryBrilink = Static<typeof schemaQuerySummaryBrilink>
+
+export const schemaParamsDetailBrilink = t.Object({
+  id: t.String({ format: "uuid", error: validationDetail("ID must be in UUID") })
+})
+
+export type ArgsGetBrilinkDetail = Static<typeof schemaParamsDetailBrilink>

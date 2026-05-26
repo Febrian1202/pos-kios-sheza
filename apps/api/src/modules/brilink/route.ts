@@ -1,11 +1,18 @@
-import { authPlugin } from "@/plugins";
+import { authPlugin, adminGuard } from "@/plugins";
 import Elysia from "elysia";
 import {
   schemaBodyBrilink,
+  schemaParamsDetailBrilink,
   schemaQueryBrilink,
   schemaQuerySummaryBrilink
 } from "./schema";
-import { createBrilinkTransaction, getBrilinkSummary, getBrilinkTransaction } from "./service";
+import {
+  createBrilinkTransaction,
+  getBrilinkSummary,
+  getBrilinkTransaction,
+  getBrilinkTransactionDetail,
+  voidBrilink
+} from "./service";
 
 export const brilinkRoutes = new Elysia({ prefix: "/brilink", name: "Brilink Routes" })
   .use(authPlugin)
@@ -43,3 +50,27 @@ export const brilinkRoutes = new Elysia({ prefix: "/brilink", name: "Brilink Rou
   }, {
     query: schemaQuerySummaryBrilink,
   })
+  .get("/:id", async ({ tenantId, params }) => {
+    const result = await getBrilinkTransactionDetail(tenantId, params);
+
+    return {
+      success: true,
+      message: "Get Brilink transaction detail success",
+      data: result
+    }
+  }, {
+    params: schemaParamsDetailBrilink
+  })
+  .use(adminGuard)
+  .post("/:id/void", async ({ tenantId, params }) => {
+    const result = await voidBrilink(tenantId, params);
+
+    return {
+      success: true,
+      message: `Brilink transaction ${result?.referenceNumber} void success!`,
+      data: result
+    }
+  }, {
+    params: schemaParamsDetailBrilink
+  })
+
