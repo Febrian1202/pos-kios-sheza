@@ -2,8 +2,18 @@ import Elysia from "elysia";
 import { bodySchemaTransaction, querySchemaTransaction, paramsSchemaTransaction } from "./schema";
 import { authPlugin, adminGuard } from "@plugin";
 import { createTransaction, getTransactionDetail, getTransactions, voidTransaction } from './service.ts';
+import { TransactionNotFoundError } from "./error.ts";
 
 export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Transaction Routes" })
+  .error({
+    "NOT_FOUND": TransactionNotFoundError
+  })
+  .onError(({ code, set, error }) => {
+    if (code === "NOT_FOUND") {
+      set.status = 404;
+      return { success: false, message: error.message }
+    }
+  })
   .use(authPlugin)
   .post('/', async ({ body, tenantId, userId, set }) => {
     const result = await createTransaction(tenantId, userId, body);

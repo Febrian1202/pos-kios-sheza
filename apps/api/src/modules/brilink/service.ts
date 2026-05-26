@@ -3,6 +3,7 @@ import type { ArgsBrilink, ArgsGetBrilink, ArgsGetBrilinkDetail, ArgsGetSummaryB
 import { and, count, desc, eq, gte, lte, sum } from "drizzle-orm";
 import { brilinkTransactions } from "@schema/index";
 import { ConflictError } from "@plugin";
+import { BrilinkNotFoundError } from "./error";
 
 export const createBrilinkTransaction = async (tenantId: string, cashierId: string, body: ArgsBrilink) => {
   const existedTransaction = await db.query.brilinkTransactions.findFirst({
@@ -133,7 +134,7 @@ export const getBrilinkTransactionDetail = async (tenantId: string, param: ArgsG
     where: and(eq(brilinkTransactions.tenantId, tenantId), eq(brilinkTransactions.id, id))
   });
 
-  if (!data) throw new ConflictError("Failed, Brilink transaction not found!");
+  if (!data) throw new BrilinkNotFoundError("Failed, Brilink transaction not found!");
 
   return data
 }
@@ -151,7 +152,7 @@ export const voidBrilink = async (
     )
   });
 
-  if (!transaction) throw new ConflictError("Brilink transaction not found!");
+  if (!transaction) throw new BrilinkNotFoundError("Brilink transaction not found!");
 
   if (transaction.status === "void" || transaction.status === "failed") {
     throw new ConflictError(`This transaction is already ${transaction.status}`);

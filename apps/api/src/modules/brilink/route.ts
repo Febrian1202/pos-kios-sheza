@@ -13,8 +13,18 @@ import {
   getBrilinkTransactionDetail,
   voidBrilink
 } from "./service";
+import { BrilinkNotFoundError } from "./error";
 
 export const brilinkRoutes = new Elysia({ prefix: "/brilink", name: "Brilink Routes" })
+  .error({
+    "NOT_FOUND": BrilinkNotFoundError
+  })
+  .onError(({ code, set, error }) => {
+    if (code === "NOT_FOUND") {
+      set.status = 404;
+      return { success: false, message: error.message }
+    }
+  })
   .use(authPlugin)
   .post("/", async ({ body, tenantId, userId, set }) => {
     const result = await createBrilinkTransaction(tenantId, userId, body);

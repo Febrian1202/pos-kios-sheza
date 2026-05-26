@@ -7,6 +7,7 @@ import type {
 import { db } from "@/db";
 import { products, transactionItems, transactions } from "@/db/schema";
 import { and, count, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { TransactionNotFoundError } from "./error";
 
 export const createTransaction = async (
   tenantId: string,
@@ -204,7 +205,7 @@ export const getTransactionDetail = async (
     ),
   });
 
-  if (!data) throw new ConflictError("Failed, data transaction doesn't exist");
+  if (!data) throw new TransactionNotFoundError("Failed, data transaction doesn't exist");
 
   return data;
 };
@@ -220,7 +221,7 @@ export const voidTransaction = async (
       with: { items: true }
     });
 
-    if (!transaction) throw new ConflictError("Transaction not found!");
+    if (!transaction) throw new TransactionNotFoundError("Transaction not found!");
     if (transaction.status === "void") throw new ConflictError("This transaction already cancelled!");
 
     // Ubah status transaksi menjadi void 
