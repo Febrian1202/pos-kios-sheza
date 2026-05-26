@@ -13,7 +13,7 @@ export const transactions = pgTable("transactions", {
   amountPaid: decimal("amount_paid").notNull(),
   changeAmount: decimal("change_amount").notNull(),
   paymentMethod: varchar("payment_method").notNull(),
-  status: varchar("status", {length: 50}).notNull().default("success"),
+  status: varchar("status", { length: 50 }).notNull().default("success"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   unique("unique_tenant_transaction_trx_number").on(table.tenantId, table.trxNumber),

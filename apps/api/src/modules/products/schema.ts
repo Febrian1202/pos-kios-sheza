@@ -3,9 +3,9 @@ import { createInsertSchema } from "drizzle-typebox";
 import { validationDetail, t, type Static } from "elysia";
 
 export const schemaQueryProduct = t.Object({
-  search: t.Optional(t.String()),
-  barcode: t.Optional(t.String()),
-  category_id: t.Optional(t.String()),
+  search: t.Optional(t.String({ error: validationDetail("Search must be in string") })),
+  barcode: t.Optional(t.String({ error: validationDetail("Barcode must be in string") })),
+  category_id: t.Optional(t.String({ error: validationDetail("Category must be in string") })),
 });
 
 export const schemaQueryProductDetail = t.Object({

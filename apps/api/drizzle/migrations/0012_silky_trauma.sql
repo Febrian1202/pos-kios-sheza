@@ -1,0 +1,1 @@
+ALTER TABLE "brilink_transactions" ALTER COLUMN "status" SET DEFAULT 'success';
