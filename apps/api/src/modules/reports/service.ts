@@ -1,5 +1,5 @@
 import { and, count, eq, gte, lte, sum } from "drizzle-orm";
-import type { ArgsQueryDailySummary } from "./schema";
+import type { ArgsQueryDailySummary, ArgsQueryMonthlySummary } from "./schema";
 import { db } from "@db";
 import { brilinkTransactions, dailySummaries, transactions } from "@/db/schema";
 import { ConflictError } from "@/plugins";
@@ -94,4 +94,39 @@ export const getDailySummary = async (tenantId: string, query: ArgsQueryDailySum
 
     throw new ConflictError("Failed to generate daily summary");
   }
+}
+
+export const getMonthlySummary = async (tenantId: string, query: ArgsQueryMonthlySummary) => {
+  const { month } = query;
+
+  // Siapkan start date dan end date
+  const startDate = `${month}-01`;
+  const endDate = `${month}-31`;
+
+  const result = await db.select({
+    totalRetailRevenue: sum(dailySummaries.retailRevenue),
+    totalRetailCogs: sum(dailySummaries.retailCogs),
+    totalBrilinkCommission: sum(dailySummaries.brilinkCommission),
+    grandTotalRevenue: sum(dailySummaries.totalRevenue),
+    grandTotalProfit: sum(dailySummaries.grossProfit),
+    totalTrxCount: sum(dailySummaries.trxCount),
+  })
+    .from(dailySummaries)
+    .where(
+      and(
+        eq(dailySummaries.tenantId, tenantId),
+        gte(dailySummaries.summaryDate, startDate),
+        lte(dailySummaries.summaryDate, endDate)
+      )
+    );
+
+  return {
+    month: month,
+    retailRevenue: Number(result[0]?.totalRetailRevenue || 0),
+    retailCogs: Number(result[0]?.totalRetailCogs || 0),
+    brilinkCommission: Number(result[0]?.totalBrilinkCommission || 0),
+    totalRevenue: Number(result[0]?.grandTotalRevenue || 0),
+    grossProfit: Number(result[0]?.grandTotalProfit || 0),
+    trxCount: Number(result[0]?.totalTrxCount || 0),
+  };
 }

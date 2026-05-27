@@ -1,8 +1,8 @@
 import { adminGuard, authPlugin } from "@/plugins";
 import Elysia from "elysia";
 import { SummaryNotFoundError } from "./error";
-import { schemaQueryDailySummary } from "./schema";
-import { getDailySummary } from "./service";
+import { schemaQueryDailySummary, schemaQueryMonthlySummary } from "./schema";
+import { getDailySummary, getMonthlySummary } from "./service";
 
 export const reportRoutes = new Elysia({ prefix: "/reports", name: "Report Routes" })
   .error({
@@ -26,5 +26,16 @@ export const reportRoutes = new Elysia({ prefix: "/reports", name: "Report Route
     }
   }, {
     query: schemaQueryDailySummary
+  })
+  .get("/monthly", async ({ tenantId, query }) => {
+    const result = await getMonthlySummary(tenantId, query);
+
+    return {
+      success: true,
+      message: `Get monthly summary for ${query.month} success`,
+      data: result
+    }
+  }, {
+    query: schemaQueryMonthlySummary
   })
 
