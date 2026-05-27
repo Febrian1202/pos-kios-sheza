@@ -9,6 +9,7 @@ import {
 } from "@modules/index.routes";
 import { ConflictError } from "@plugin";
 import { corsPlugin } from "@plugin";
+import { startDailySummaryJob } from "@jobs"
 
 const app = new Elysia()
   .use(corsPlugin)
@@ -34,6 +35,8 @@ const app = new Elysia()
   .use(brilinkRoutes)
   .use(reportRoutes)
   .listen(Bun.env.PORT ?? 3000);
+
+startDailySummaryJob()
 
 console.log(
   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`

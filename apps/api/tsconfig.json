@@ -45,6 +45,9 @@
       ],
       "@plugin": [
         "./src/plugins/index.ts"
+      ],
+      "@jobs": [
+        "./src/jobs/index.ts"
       ]
     }
   }
