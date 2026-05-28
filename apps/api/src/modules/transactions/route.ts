@@ -1,4 +1,5 @@
 import Elysia from "elysia";
+import { rateLimit } from "elysia-rate-limit";
 import { bodySchemaTransaction, querySchemaTransaction, paramsSchemaTransaction } from "./schema";
 import { authPlugin, adminGuard } from "@plugin";
 import { createTransaction, getTransactionDetail, getTransactions, voidTransaction } from './service.ts';
@@ -15,18 +16,6 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Tr
     }
   })
   .use(authPlugin)
-  .post('/', async ({ body, tenantId, userId, set }) => {
-    const result = await createTransaction(tenantId, userId, body);
-    set.status = 201;
-
-    return {
-      success: true,
-      message: "Transaction process success!",
-      data: result,
-    }
-  }, {
-    body: bodySchemaTransaction
-  })
   .get("/", async ({ tenantId, query }) => {
     const result = await getTransactions(tenantId, query);
 
@@ -50,6 +39,30 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Tr
   }, {
     params: paramsSchemaTransaction,
   })
+  .use(rateLimit({
+    duration: 10000,
+    max: 2,
+    errorResponse: new Response(
+      JSON.stringify({
+        success: false,
+        message: "The transaction is being processed. Please wait a moment to avoid duplicate data."
+      }),
+      { status: 429, headers: { 'Content-Type': 'application/json' } }
+    )
+  }))
+  .post('/', async ({ body, tenantId, userId, set }) => {
+    const result = await createTransaction(tenantId, userId, body);
+    set.status = 201;
+
+    return {
+      success: true,
+      message: "Transaction process success!",
+      data: result,
+    }
+  }, {
+    body: bodySchemaTransaction
+  })
+
   .use(adminGuard)
   .post("/:id/void", async ({ params: { id }, tenantId }) => {
     const result = await voidTransaction(tenantId, id);

@@ -1,5 +1,6 @@
 import { authPlugin, adminGuard } from "@/plugins";
 import Elysia from "elysia";
+import { rateLimit } from "elysia-rate-limit";
 import {
   schemaBodyBrilink,
   schemaParamsDetailBrilink,
@@ -26,18 +27,6 @@ export const brilinkRoutes = new Elysia({ prefix: "/brilink", name: "Brilink Rou
     }
   })
   .use(authPlugin)
-  .post("/", async ({ body, tenantId, userId, set }) => {
-    const result = await createBrilinkTransaction(tenantId, userId, body);
-
-    set.status = 201;
-    return {
-      success: true,
-      message: "Creating Brilink Transaction success!",
-      data: result
-    }
-  }, {
-    body: schemaBodyBrilink
-  })
   .get("/", async ({ query, tenantId }) => {
     const result = await getBrilinkTransaction(tenantId, query);
 
@@ -71,6 +60,30 @@ export const brilinkRoutes = new Elysia({ prefix: "/brilink", name: "Brilink Rou
   }, {
     params: schemaParamsDetailBrilink
   })
+  .use(rateLimit({
+    duration: 10000,
+    max: 2,
+    errorResponse: new Response(
+      JSON.stringify({
+        success: false,
+        message: "The transaction is being processed. Please wait a moment to avoid duplicate data."
+      }),
+      { status: 429, headers: { 'Content-Type': 'application/json' } }
+    )
+  }))
+  .post("/", async ({ body, tenantId, userId, set }) => {
+    const result = await createBrilinkTransaction(tenantId, userId, body);
+
+    set.status = 201;
+    return {
+      success: true,
+      message: "Creating Brilink Transaction success!",
+      data: result
+    }
+  }, {
+    body: schemaBodyBrilink
+  })
+
   .use(adminGuard)
   .post("/:id/void", async ({ tenantId, params }) => {
     const result = await voidBrilink(tenantId, params);

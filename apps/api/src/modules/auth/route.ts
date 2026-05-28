@@ -3,8 +3,14 @@ import { schemaBodyLogin, schemaBodyRegister, schemaCookie } from "./schema";
 import { LoginError, RegisterError, SessionError } from "./error";
 import { getUser, registerBusiness, updateRefreshToken, verifyUsers } from "./service";
 import { authPlugin, jwtAccessSetup, jwtRefreshSetup } from "@plugin";
+import { rateLimit } from "elysia-rate-limit";
 
 export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
+  .use(rateLimit({
+    duration: 60000,
+    max: 5,
+    errorResponse: new Response("Too many login attempts. Please wait 1 minute.", { status: 429 })
+  }))
   .error({
     LOGIN_ERROR: LoginError,
     SESSION_ERROR: SessionError,

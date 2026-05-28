@@ -10,8 +10,14 @@ import {
 import { ConflictError } from "@plugin";
 import { corsPlugin } from "@plugin";
 import { startDailySummaryJob } from "@jobs"
+import { rateLimit } from "elysia-rate-limit";
 
 const app = new Elysia()
+  .use(rateLimit({
+    duration: 60000,
+    max: 120,
+    errorResponse: new Response("Too many request. Please wait a moment", { status: 429 })
+  }))
   .use(corsPlugin)
   .error({
     "CONFLICT": ConflictError,
