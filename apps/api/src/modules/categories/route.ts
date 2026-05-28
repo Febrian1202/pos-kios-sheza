@@ -3,7 +3,7 @@ import Elysia from "elysia";
 import { schemaParamsCategory, schemaQueryCategory, schemaBodyCategory, schemaBodyCategoryUpdate } from "./schema";
 import { getCategory, getCategoryDetail, postCategory, updateCategory, deleteCategory } from "./service";
 
-export const categoriesRoutes = new Elysia({ prefix: "/category", name: "Category Routes" })
+export const categoriesRoutes = new Elysia({ prefix: "/category", name: "Category Routes", tags: ["Category Routes"] })
   .use(authPlugin)
   .get("/", async ({ tenantId, query: { search } }) => {
     const result = await getCategory(tenantId, search);

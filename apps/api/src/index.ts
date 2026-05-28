@@ -7,12 +7,12 @@ import {
   transactionRoutes,
   reportRoutes
 } from "@modules/index.routes";
-import { ConflictError } from "@plugin";
-import { corsPlugin } from "@plugin";
+import { ConflictError, swaggerPlugin, corsPlugin } from "@plugin";
 import { startDailySummaryJob } from "@jobs"
 import { rateLimit } from "elysia-rate-limit";
 
 const app = new Elysia()
+  .use(swaggerPlugin)
   .use(rateLimit({
     duration: 60000,
     max: 120,

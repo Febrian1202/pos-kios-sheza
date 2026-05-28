@@ -8,13 +8,13 @@ export const transactions = pgTable("transactions", {
   id: uuid("id").defaultRandom().primaryKey(),
   tenantId: uuid("tenant_id").references(() => tenants.id, { onDelete: "cascade" }),
   cashierId: uuid("cashier_id").references(() => users.id, { onDelete: "set null" }),
-  trxNumber: varchar("trx_number", { length: 255 }),
+  trxNumber: varchar("trx_number", { length: 255 }).notNull(),
   totalAmount: decimal("total_amount").notNull(),
   amountPaid: decimal("amount_paid").notNull(),
   changeAmount: decimal("change_amount").notNull(),
   paymentMethod: varchar("payment_method").notNull(),
   status: varchar("status", { length: 50 }).notNull().default("success"),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [
   unique("unique_tenant_transaction_trx_number").on(table.tenantId, table.trxNumber),
 ])

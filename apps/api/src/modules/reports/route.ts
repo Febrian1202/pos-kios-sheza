@@ -4,7 +4,7 @@ import { SummaryNotFoundError } from "./error";
 import { schemaQueryDailySummary, schemaQueryMonthlySummary } from "./schema";
 import { getDailySummary, getMonthlySummary } from "./service";
 
-export const reportRoutes = new Elysia({ prefix: "/reports", name: "Report Routes" })
+export const reportRoutes = new Elysia({ prefix: "/reports", name: "Report Routes", tags: ["Report Routes"] })
   .error({
     "NOT_FOUND": SummaryNotFoundError
   })
@@ -25,7 +25,15 @@ export const reportRoutes = new Elysia({ prefix: "/reports", name: "Report Route
       data: result
     }
   }, {
-    query: schemaQueryDailySummary
+    query: schemaQueryDailySummary,
+    detail: {
+      summary: "Laporan Harian",
+      description: "Endpoint digunakan untuk mendapatkan laporan harian.",
+      responses: {
+        200: { description: "Laporan harian berhasil didapatkan" },
+        404: { description: "Laporan harian tidak ditemukan" }
+      }
+    }
   })
   .get("/monthly", async ({ tenantId, query }) => {
     const result = await getMonthlySummary(tenantId, query);

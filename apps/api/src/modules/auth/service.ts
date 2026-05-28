@@ -1,10 +1,10 @@
-import { db } from "@/db"
-import { tenants, users } from "@/db/schema"
+import { db } from "@db"
+import { tenants, users } from "@schema/index"
 import { and, eq } from "drizzle-orm"
 import { LoginError, SessionError } from "./error";
 import type { ArgsRegister } from "./schema";
-import { ConflictError } from "@/plugins";
-import { slugify } from "@/helper";
+import { ConflictError } from "@plugin";
+import { slugify } from "@helper";
 
 export const verifyUsers = async (userEmail: string, userPassword: string) => {
   const normalizedEmail = userEmail.toLowerCase().trim();

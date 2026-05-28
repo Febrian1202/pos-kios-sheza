@@ -16,7 +16,7 @@ import {
 } from "./service";
 import { BrilinkNotFoundError } from "./error";
 
-export const brilinkRoutes = new Elysia({ prefix: "/brilink", name: "Brilink Routes" })
+export const brilinkRoutes = new Elysia({ prefix: "/brilink", name: "Brilink Routes", tags: ["Brilink Routes"] })
   .error({
     "NOT_FOUND": BrilinkNotFoundError
   })

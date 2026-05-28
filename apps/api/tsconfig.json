@@ -48,6 +48,9 @@
       ],
       "@jobs": [
         "./src/jobs/index.ts"
+      ],
+      "@shared": [
+        "./src/shared/index.ts"
       ]
     }
   }

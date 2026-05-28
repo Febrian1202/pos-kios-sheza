@@ -1,11 +1,25 @@
 import Elysia from "elysia";
 import { rateLimit } from "elysia-rate-limit";
-import { bodySchemaTransaction, querySchemaTransaction, paramsSchemaTransaction } from "./schema";
+import {
+  bodySchemaTransaction,
+  querySchemaTransaction,
+  paramsSchemaTransaction,
+  schemaResponseGet,
+  schemaResponseGetDetail,
+  schemaResponsePost,
+  schemaResponsePostVoid
+} from "./schema";
+import { schemaResponseError } from "@shared";
 import { authPlugin, adminGuard } from "@plugin";
-import { createTransaction, getTransactionDetail, getTransactions, voidTransaction } from './service.ts';
+import {
+  createTransaction,
+  getTransactionDetail,
+  getTransactions,
+  voidTransaction
+} from './service.ts';
 import { TransactionNotFoundError } from "./error.ts";
 
-export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Transaction Routes" })
+export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Transaction Routes", detail: { tags: ["Transaction Routes"] } })
   .error({
     "NOT_FOUND": TransactionNotFoundError
   })
@@ -26,7 +40,15 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Tr
       meta: result.meta
     }
   }, {
-    query: querySchemaTransaction
+    query: querySchemaTransaction,
+    response: {
+      200: schemaResponseGet,
+      404: schemaResponseError
+    },
+    detail: {
+      summary: "Daftar Riwayat Transaksi",
+      description: "Mengambil daftar riwayat transaksi penjualan ritel toko. Endpoint ini biasanya digunakan pada halaman riwayat mesin kasir dan mendukung *pagination* serta pencarian data berdasarkan *query parameter*."
+    }
   })
   .get("/:id", async ({ params, tenantId }) => {
     const result = await getTransactionDetail(tenantId, params);
@@ -38,6 +60,14 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Tr
     }
   }, {
     params: paramsSchemaTransaction,
+    response: {
+      200: schemaResponseGetDetail,
+      404: schemaResponseError
+    },
+    detail: {
+      summary: "Detail Transaksi Ritel",
+      description: "Mengambil informasi detail dari satu transaksi spesifik berdasarkan ID (UUID). Endpoint ini akan mengembalikan data lengkap termasuk daftar barang (item) yang dibeli, harga satuan, dan total belanja untuk keperluan pencetakan struk ulang."
+    }
   })
   .use(rateLimit({
     duration: 10000,
@@ -60,7 +90,15 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Tr
       data: result,
     }
   }, {
-    body: bodySchemaTransaction
+    body: bodySchemaTransaction,
+    response: {
+      201: schemaResponsePost,
+      409: schemaResponseError
+    },
+    detail: {
+      summary: "Buat Transaksi Baru (Checkout)",
+      description: "Memproses transaksi penjualan barang dari kasir. Endpoint ini akan menyimpan data pesanan dan secara otomatis **memotong stok barang** di *database*. Terdapat perlindungan *rate limit* (jendela waktu 10 detik) untuk mencegah data ganda (*double-submit*) akibat kasir mengklik tombol berulang kali saat jaringan lambat."
+    }
   })
 
   .use(adminGuard)
@@ -74,4 +112,12 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", name: "Tr
     }
   }, {
     params: paramsSchemaTransaction,
+    response: {
+      200: schemaResponsePostVoid,
+      400: schemaResponseError,
+    },
+    detail: {
+      summary: "Batalkan Transaksi (Void)",
+      description: "Membatalkan transaksi yang sudah terjadi (*void*). Endpoint ini akan mengubah status transaksi menjadi dibatalkan dan secara otomatis **mengembalikan stok barang** ke jumlah semula. \n\n🚨 **Perhatian:** Endpoint ini dilindungi oleh `adminGuard` dan hanya bisa diakses oleh *user* dengan *role* **Admin**."
+    }
   })

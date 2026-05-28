@@ -1,8 +1,48 @@
-import { users } from "@/db/schema";
-import { createSelectSchema } from "drizzle-typebox";
+import { withSuccess } from "@/shared";
 import { t, validationDetail, type Static } from "elysia";
 
-export const schemaResponseAuth = createSelectSchema(users);
+const user = t.Object({
+
+  id: t.String(),
+  name: t.String(),
+  email: t.String(),
+  role: t.String(),
+  tenantId: t.String(),
+
+})
+
+const tenant = t.Object({
+  id: t.String(),
+  name: t.String(),
+  slug: t.String(),
+})
+
+export const schemaResponseLogin = withSuccess(
+  t.Object({
+    accessToken: t.String(),
+    user
+  })
+)
+
+export const schemaResponseRegister = withSuccess(
+  t.Object({
+    accessToken: t.String(),
+    user,
+    tenant
+  })
+)
+
+export const schemaResponseRefresh = withSuccess(
+  t.Object({
+    accessToken: t.String()
+  })
+)
+
+export const schemaResponseMe = withSuccess(
+  t.Object({
+    user: user
+  })
+)
 
 export const schemaBodyLogin = t.Object({
   email: t.String({ format: "email", error: validationDetail("Email is not valid") }),

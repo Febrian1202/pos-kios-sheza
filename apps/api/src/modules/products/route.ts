@@ -4,7 +4,7 @@ import { schemaQueryProduct, schemaQueryProductDetail, schemaBodyProduct, schema
 import { getProduct, getProductDetail, postProduct, patchProduct, softDeleteProduct } from "./service";
 import { ProductNotFoundError } from "./error";
 
-export const productRoutes = new Elysia({ prefix: "/products", name: "Product Routes" })
+export const productRoutes = new Elysia({ prefix: "/products", name: "Product Routes", tags: ["Product Routes"] })
   .use(authPlugin)
   .error({
     "PRODUCT_NOT_FOUND": ProductNotFoundError,

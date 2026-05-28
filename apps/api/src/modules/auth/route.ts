@@ -1,11 +1,20 @@
-import { Elysia } from "elysia";
-import { schemaBodyLogin, schemaBodyRegister, schemaCookie } from "./schema";
+import Elysia from "elysia";
+import {
+  schemaBodyLogin,
+  schemaBodyRegister,
+  schemaCookie,
+  schemaResponseLogin,
+  schemaResponseRegister,
+  schemaResponseRefresh,
+  schemaResponseMe
+} from "./schema";
 import { LoginError, RegisterError, SessionError } from "./error";
 import { getUser, registerBusiness, updateRefreshToken, verifyUsers } from "./service";
 import { authPlugin, jwtAccessSetup, jwtRefreshSetup } from "@plugin";
 import { rateLimit } from "elysia-rate-limit";
+import { schemaResponseError, schemaResponseSuccess } from "@/shared";
 
-export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
+export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes", detail: { tags: ["Auth Routes"] } })
   .use(rateLimit({
     duration: 60000,
     max: 5,
@@ -73,7 +82,16 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
     },
     {
       body: schemaBodyLogin,
-      cookie: schemaCookie
+      cookie: schemaCookie,
+      response: {
+        200: schemaResponseLogin,
+        401: schemaResponseError,
+        500: schemaResponseError,
+      },
+      detail: {
+        summary: "Login Admin/Kasir",
+        description: "Endpoint ini digunakan untuk memvalidasi email dan password. Jika berhasil, sistem akan mengembalikan `accessToken` dan otomatis memasang `refreshToken` ke dalam **HttpOnly Cookie**."
+      }
     },
   )
   .post("/register", async ({ body, set, accessJwt, refreshJwt, cookie: { refreshToken } }) => {
@@ -116,7 +134,16 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
     }
   }, {
     body: schemaBodyRegister,
-    cookie: schemaCookie
+    cookie: schemaCookie,
+    response: {
+      200: schemaResponseRegister,
+      401: schemaResponseError,
+      500: schemaResponseError
+    },
+    detail: {
+      summary: "Pendaftaran Toko Baru (Tenant)",
+      description: "Pendaftarkan toko atau cabang baru ke dalam sistem terpusat. Endpoint ini secara otomatis akan membangun entitas `tenant` baru beserta satu akun pengguna yang langsung diberikan hak akses sebagai **Admin**. Jika berhasil, sistem akan mengembalikan `accessToken` dan menyetel `refreshToken` secara aman ke dalam cookie."
+    }
   })
   .post("/refresh", async ({ refreshJwt, accessJwt, cookie: { refreshToken } }) => {
 
@@ -146,7 +173,16 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
       }
     }
   }, {
-    cookie: schemaCookie
+    cookie: schemaCookie,
+    response: {
+      200: schemaResponseRefresh,
+      401: schemaResponseError,
+      500: schemaResponseError
+    },
+    detail: {
+      summary: "Perbarui Access Token (Silent Refresh)",
+      description: "Mengeluarkan `accessToken` baru ketika token lama sudah kedaluwarsa. Endpoint ini membaca `refreshToken` secara otomatis dari **HttpOnly Cookie** klien. Mekanisme ini memastikan sesi operasional kasir tetap berjalan lancar tanpa perlu login ulang berulang kali."
+    }
   })
   .use(authPlugin)
   .get("/me", async ({ userId }) => {
@@ -156,6 +192,14 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
       success: true,
       message: "Get profile success",
       data: user,
+    }
+  }, {
+    response: {
+      200: schemaResponseMe
+    },
+    detail: {
+      summary: "Ambil Profil Pengguna Aktif",
+      description: "Mengambil data profil pengguna secara lengkap berdasarkan `accessToken` yang dikirimkan pada *header* Authorization. Biasanya digunakan oleh frontend untuk menampilkan nama dan hak akses kasir yang sedang bertugas di mesin kasir."
     }
   })
   .post("/logout", async ({ userId, cookie: { refreshToken } }) => {
@@ -168,5 +212,12 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
     }
   }, {
     cookie: schemaCookie,
+    response: {
+      200: schemaResponseSuccess
+    },
+    detail: {
+      summary: "Logout / Akhiri Sesi",
+      description: "Mengakhiri sesi pengguna secara permanen. Endpoint ini akan menghapus jejak `refreshToken` yang ada di database demi keamanan, sekaligus memberikan instruksi kepada browser untuk memusnahkan cookie sesi pengguna tersebut."
+    }
   })
   ;
