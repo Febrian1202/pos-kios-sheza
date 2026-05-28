@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { schemaBodyLogin, schemaBodyRegister, schemaBodyRefresh } from "./schema";
+import { schemaBodyLogin, schemaBodyRegister, schemaCookie } from "./schema";
 import { LoginError, RegisterError, SessionError } from "./error";
 import { getUser, registerBusiness, updateRefreshToken, verifyUsers } from "./service";
 import { authPlugin, jwtAccessSetup, jwtRefreshSetup } from "@plugin";
@@ -24,7 +24,7 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
   .use(jwtRefreshSetup)
   .post(
     "/login",
-    async ({ body, accessJwt, refreshJwt }) => {
+    async ({ body, accessJwt, refreshJwt, cookie: { refreshToken } }) => {
       const user = await verifyUsers(body.email, body.password);
 
       const accessToken = await accessJwt.sign({
@@ -33,20 +33,28 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
         role: user.role,
       });
 
-      const refreshToken = await refreshJwt.sign({
+      const refreshJwtToken = await refreshJwt.sign({
         sub: user.id,
         tenantId: user.tenantId,
         role: user.role,
       });
 
-      updateRefreshToken(user.id, refreshToken);
+      await updateRefreshToken(user.id, refreshJwtToken);
+
+      refreshToken.set({
+        value: refreshJwtToken,
+        httpOnly: true,
+        secure: Bun.env.NODE_ENV === "production",
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60,
+        path: "/auth"
+      })
 
       return {
         success: true,
         message: `Login succesfull, welcome back ${user.name}`,
         data: {
           accessToken: accessToken,
-          refreshToken: refreshToken,
           user: {
             id: user.id,
             name: user.name,
@@ -59,9 +67,10 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
     },
     {
       body: schemaBodyLogin,
+      cookie: schemaCookie
     },
   )
-  .post("/register", async ({ body, set, accessJwt, refreshJwt }) => {
+  .post("/register", async ({ body, set, accessJwt, refreshJwt, cookie: { refreshToken } }) => {
     const result = await registerBusiness(body);
 
     if (!result.user || !result.store) throw new RegisterError("Failed when creating account, please try again!");
@@ -71,13 +80,23 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
       tenantId: result.store.id,
       role: result.user.role,
     });
-    const refreshToken = await refreshJwt.sign({
+    const refreshJwtToken = await refreshJwt.sign({
       sub: result.user.id,
       tenantId: result.store.id,
       role: result.user.role,
     });
 
-    updateRefreshToken(result.user.id, refreshToken);
+    await updateRefreshToken(result.user.id, refreshJwtToken);
+
+    refreshToken.set({
+      value: refreshJwtToken,
+      httpOnly: true,
+      secure: Bun.env.NODE_ENV === "production",
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60,
+      path: "/auth"
+    })
+
     set.status = 201;
 
     return {
@@ -85,22 +104,25 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
       message: `Registration success, welcome to ${result.store?.name}!`,
       data: {
         accessToken: accessToken,
-        refreshToken: refreshToken,
         user: result.user,
         tenant: result.store
       }
     }
   }, {
-    body: schemaBodyRegister
+    body: schemaBodyRegister,
+    cookie: schemaCookie
   })
-  .post("/refresh", async ({ body, refreshJwt, accessJwt }) => {
-    const payload = await refreshJwt.verify(body.refreshToken);
+  .post("/refresh", async ({ refreshJwt, accessJwt, cookie: { refreshToken } }) => {
+
+    if (!refreshToken.value) throw new SessionError("Session is not valid, or session expired");
+
+    const payload = await refreshJwt.verify(refreshToken.value);
 
     if (!payload) throw new SessionError("Session is not valid, or session expired");
 
     const user = await getUser(payload.sub as string);
 
-    if (body.refreshToken !== user.refreshToken) {
+    if (refreshToken.value !== user.refreshToken) {
       throw new SessionError("Session ended (logged out).")
     }
 
@@ -118,7 +140,7 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
       }
     }
   }, {
-    body: schemaBodyRefresh,
+    cookie: schemaCookie
   })
   .use(authPlugin)
   .get("/me", async ({ userId }) => {
@@ -130,14 +152,15 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes" })
       data: user,
     }
   })
-  .post("/logout", async ({ userId }) => {
+  .post("/logout", async ({ userId, cookie: { refreshToken } }) => {
     await updateRefreshToken(userId, null);
 
+    refreshToken?.remove();
     return {
       success: true,
       message: "Logout success, session ended!"
     }
   }, {
-
+    cookie: schemaCookie,
   })
   ;

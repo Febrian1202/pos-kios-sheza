@@ -18,8 +18,8 @@ export const schemaBodyRegister = t.Object({
   password: t.String({ minLength: 6, error: validationDetail("Password minimum 6 characters length") })
 });
 
-export const schemaBodyRefresh = t.Object({
-  refreshToken: t.String({ error: validationDetail("Refresh Token must be in string type!") }),
-})
-
 export type ArgsRegister = Static<typeof schemaBodyRegister>;
+
+export const schemaCookie = t.Cookie({
+  refreshToken: t.Optional(t.String({ error: validationDetail("Token invalid!") }))
+})
