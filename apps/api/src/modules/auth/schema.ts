@@ -11,9 +11,12 @@ export const schemaBodyLogin = t.Object({
   }),
 });
 
+const safeTextPattern = "^[a-zA-Z0-9 .,'-]+$";
+const safeTextError = "Only letters, numbers, spaces, periods, commas, hyphens, and quotation marks are allowed."
+
 export const schemaBodyRegister = t.Object({
-  storeName: t.String({ minLength: 3, error: validationDetail("Store name minimum 3 characters length") }),
-  userName: t.String({ minLength: 3, error: validationDetail("Admin name minimum 3 characters length") }),
+  storeName: t.String({ minLength: 3, pattern: safeTextPattern, error: validationDetail(`Store name minimum 3 characters length. ${safeTextError}`) }),
+  userName: t.String({ minLength: 3, error: validationDetail(`Admin name minimum 3 characters length. ${safeTextError}`), pattern: safeTextPattern }),
   email: t.String({ format: "email", error: validationDetail("Email format not valid!") }),
   password: t.String({ minLength: 6, error: validationDetail("Password minimum 6 characters length") })
 });

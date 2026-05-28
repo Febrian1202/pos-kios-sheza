@@ -15,8 +15,13 @@ export const schemaQueryProductDetail = t.Object({
   }),
 });
 
+// Regex
+const regexProductName = "^[a-zA-Z0-9 .,'\\-()/%+&]+$";
+const regexBarcode = "^[a-zA-Z0-9_-]+$";
+
 const unfilteredBodyProduct = createInsertSchema(products, {
-  barcode: t.Optional(t.String()),
+  barcode: t.Optional(t.String({ pattern: regexBarcode, error: validationDetail("The barcode may only contain letters, numbers, hyphens, and underscores.") })),
+  name: t.String({ pattern: regexProductName, error: validationDetail("The product name may only contain letters, numbers, and basic symbols.") })
 });
 
 export const schemaBodyProduct = t.Omit(unfilteredBodyProduct, ["id", "createdAt", "updatedAt", "isActive", "slug", "tenantId"]);

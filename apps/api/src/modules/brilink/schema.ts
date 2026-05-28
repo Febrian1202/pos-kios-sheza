@@ -2,6 +2,9 @@ import { brilinkTransactions } from "@/db/schema";
 import { createInsertSchema } from "drizzle-typebox";
 import { t, validationDetail, type Static } from "elysia";
 
+const regexSafeNotes = "^[^<>{}]+$";
+const regexSafeRefNumber = "^[a-zA-Z0-9]+$";
+
 const baseBrilinkSchema = createInsertSchema(brilinkTransactions, {
   trxType: t.Union([
     t.Literal("transfer"),
@@ -13,6 +16,14 @@ const baseBrilinkSchema = createInsertSchema(brilinkTransactions, {
   agentCommission: t.Numeric({ exclusiveMinimum: 0, error: validationDetail("Agent commission cannot empty!") }),
   customerAmount: t.Numeric({ minimum: 0, error: validationDetail("Customer amount invalid!") }),
   adminFeeCharged: t.Numeric({ minimum: 0, error: validationDetail("Admin fee invalid!") }),
+  notes: t.Optional(t.String({
+    pattern: regexSafeNotes,
+    error: validationDetail("Notes must not contain the characters <, >, {, or }.")
+  })),
+  referenceNumber: t.Optional(t.String({
+    pattern: regexSafeRefNumber,
+    error: validationDetail("The reference number may only contain letters and numbers.")
+  }))
 })
 
 export const schemaBodyBrilink = t.Omit(baseBrilinkSchema, ["id", "status", "tenantId", "createdAt", "cashierId"])
