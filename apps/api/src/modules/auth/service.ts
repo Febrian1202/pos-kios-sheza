@@ -164,3 +164,24 @@ export const registerCashier = async (
 
   return newCashier;
 }
+
+export const getCashier = async (
+  tenantId: string
+) => {
+  const result = await db.query.users.findMany({
+    where: and(
+      eq(users.tenantId, tenantId),
+      eq(users.role, "cashier"),
+      eq(users.isActive, true)
+    ),
+    columns: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      tenantId: true
+    }
+  });
+
+  return result
+}

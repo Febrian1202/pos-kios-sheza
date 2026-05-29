@@ -8,6 +8,20 @@ export enum UserRole {
   CASHIER = "cashier"
 }
 
+export const schemaUser = t.Object({
+  id: t.String({ format: "uuid" }),
+  name: t.String(),
+  email: t.String({ format: "email" }),
+  role: t.Enum(UserRole),
+  tenantId: t.String({ format: "uuid" })
+});
+
+export const schemaTenant = t.Object({
+  id: t.String({ format: "uuid" }),
+  name: t.String(),
+  slug: t.String()
+});
+
 const REGEX_SAFE_TEXT = "^[a-zA-Z0-9 .,'-]+$";
 const SAFE_TEXT_ERROR = "Only letters, numbers, spaces, periods, commas, hyphens, and quotation marks are allowed.";
 
@@ -64,21 +78,8 @@ export const schemaBodyRegisterCashier = t.Object({
 
 export type ArgsRegisterCashier = Static<typeof schemaBodyRegisterCashier>;
 
+
 // --- Response Schemas ---
-
-export const schemaUser = t.Object({
-  id: t.String({ format: "uuid" }),
-  name: t.String(),
-  email: t.String({ format: "email" }),
-  role: t.Enum(UserRole),
-  tenantId: t.String({ format: "uuid" })
-});
-
-export const schemaTenant = t.Object({
-  id: t.String({ format: "uuid" }),
-  name: t.String(),
-  slug: t.String()
-});
 
 export const schemaResponseLogin = withSuccess(
   t.Object({
@@ -104,3 +105,5 @@ export const schemaResponseRefresh = withSuccess(
 export const schemaResponseMe = withSuccess(schemaUser)
 
 export const schemaResponseRegisterCashier = withSuccess(schemaUser);
+
+export const schemaResponseGetCashier = withSuccess(t.Array(schemaUser));

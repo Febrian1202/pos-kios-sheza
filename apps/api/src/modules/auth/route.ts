@@ -8,10 +8,11 @@ import {
   schemaResponseRefresh,
   schemaResponseMe,
   schemaBodyRegisterCashier,
-  schemaResponseRegisterCashier
+  schemaResponseRegisterCashier,
+  schemaResponseGetCashier
 } from "./schema";
 import { LoginError, RegisterError, SessionError } from "./error";
-import { getUser, registerBusiness, registerCashier, updateRefreshToken, verifyUsers } from "./service";
+import { getCashier, getUser, registerBusiness, registerCashier, updateRefreshToken, verifyUsers } from "./service";
 import { authPlugin, jwtAccessSetup, jwtRefreshSetup, adminGuard } from "@plugin";
 import { rateLimit } from "elysia-rate-limit";
 import { schemaResponseError, schemaResponseSuccess } from "@/shared";
@@ -237,11 +238,29 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes", det
     body: schemaBodyRegisterCashier,
     response: {
       201: schemaResponseRegisterCashier,
-      400: schemaResponseError,
+      401: schemaResponseError,
       409: schemaResponseError,
     },
     detail: {
       summary: "Daftarkan Kasir Baru (Staf)",
       description: "Mendaftarkan akun staf/kasir baru untuk toko. Akun ini secara otomatis akan diikat ke `tenantId` yang sama dengan milik Admin pembuatnya.\n\n🚨 **Perhatian:** Dilindungi ketat oleh `adminGuard` dan hanya bisa diakses oleh **Admin**."
+    }
+  })
+  .get("/cashiers", async ({ tenantId }) => {
+    const result = await getCashier(tenantId);
+
+    return {
+      success: true,
+      message: "Get cashiers data success",
+      data: result
+    }
+  }, {
+    response: {
+      200: schemaResponseGetCashier,
+      400: schemaResponseError
+    },
+    detail: {
+      summary: "Daftar Semua Kasir (Staf)",
+      description: "Mengambil seluruh daftar akun kasir/staf yang bekerja di toko milik Admin yang sedang login aktif. Memastikan isolasi data antar toko (*tenant*) tetap terjaga rapat.\n\n🚨 **Perhatian:** Hanya bisa diakses oleh **Admin**."
     }
   });
