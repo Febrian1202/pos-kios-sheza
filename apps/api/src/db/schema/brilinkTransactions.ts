@@ -11,7 +11,7 @@ export const brilinkTransactions = pgTable("brilink_transactions", {
   customerAmount: decimal("customer_amount").notNull(),
   adminFeeCharged: decimal("admin_fee_charged").notNull(),
   agentCommission: decimal("agent_commission").notNull(),
-  referenceNumber: varchar("reference_number", { length: 255 }).notNull(),
+  referenceNumber: varchar("reference_number", { length: 255 }).notNull(), 
   status: varchar("status", { length: 255 }).notNull().default("success"),
   notes: varchar("notes", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),

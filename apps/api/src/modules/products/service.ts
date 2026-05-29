@@ -24,12 +24,18 @@ export const getProduct = async (tenantId: string, search?: string, barcode?: st
       sellingPrice: true,
       stockQty: true,
       unit: true,
-      categoryId: true,
       createdAt: true,
       updatedAt: true,
     },
     where: and(...filters, eq(products.isActive, true)),
-    orderBy: desc(products.createdAt)
+    orderBy: desc(products.createdAt),
+    with: {
+      category: {
+        columns: {
+          name: true
+        }
+      }
+    }
   })
 
   return result;
@@ -38,12 +44,15 @@ export const getProduct = async (tenantId: string, search?: string, barcode?: st
 export const getProductDetail = async (id: string, tenantId: string) => {
   const product = await db.query.products.findFirst({
     columns: {
+      id: true,
       name: true,
       barcode: true,
       sellingPrice: true,
       unit: true,
+      slug: true,
       stockQty: true,
       createdAt: true,
+      updatedAt: true
     },
     where: and(
       eq(products.tenantId, tenantId),
@@ -62,13 +71,16 @@ export const getProductDetail = async (id: string, tenantId: string) => {
   if (!product) throw new ProductNotFoundError("Product detail not found!")
 
   return {
+    id: product.id,
     name: product.name,
     category: product.category?.name,
+    slug: product.slug,
     barcode: product.barcode,
     sellingPrice: product.sellingPrice,
     unit: product.unit,
     stockQty: product.stockQty,
     createdAt: product.createdAt,
+    updatedAt: product.updatedAt
   }
 }
 

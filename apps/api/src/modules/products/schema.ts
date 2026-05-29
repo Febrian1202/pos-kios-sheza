@@ -1,5 +1,6 @@
 import { products } from "@/db/schema";
-import { createInsertSchema } from "drizzle-typebox";
+import { schemaResponseSuccess, withSuccess } from "@/shared";
+import { createInsertSchema, createSelectSchema } from "drizzle-typebox";
 import { validationDetail, t, type Static } from "elysia";
 
 export const schemaQueryProduct = t.Object({
@@ -37,3 +38,43 @@ export const schemaQueryUpdateProduct = t.Object({
 export const schemaBodyUpdateProduct = t.Partial(schemaBodyProduct);
 
 export type ArgsProductUpdate = Static<typeof schemaBodyUpdateProduct>
+
+const baseProduct = createSelectSchema(products)
+
+const productWithCategory = t.Composite([
+  t.Omit(baseProduct, ["tenantId", "categoryId"]),
+  t.Object({
+    category: t.Object({
+      name: t.String()
+    })
+  })
+])
+
+export const schemaResponseGet = withSuccess(
+  t.Array(productWithCategory)
+)
+
+const productPlusCategory = t.Composite([
+  t.Omit(baseProduct, ["tenantId", "categoryId"]),
+  t.Object({
+    category: t.String()
+  })
+])
+
+export const schemaResponseGetDetail = withSuccess(
+  productPlusCategory
+)
+
+export const schemaResponsePost = withSuccess(
+  t.Object({
+    id: t.String({ format: "uuid" }),
+    name: t.String(),
+    slug: t.String()
+  })
+)
+
+export const schemaResponsePatch = withSuccess(
+  baseProduct
+)
+
+export const schemaResponseDelete = schemaResponseSuccess;
