@@ -6,11 +6,13 @@ import {
   schemaResponseLogin,
   schemaResponseRegister,
   schemaResponseRefresh,
-  schemaResponseMe
+  schemaResponseMe,
+  schemaBodyRegisterCashier,
+  schemaResponseRegisterCashier
 } from "./schema";
 import { LoginError, RegisterError, SessionError } from "./error";
-import { getUser, registerBusiness, updateRefreshToken, verifyUsers } from "./service";
-import { authPlugin, jwtAccessSetup, jwtRefreshSetup } from "@plugin";
+import { getUser, registerBusiness, registerCashier, updateRefreshToken, verifyUsers } from "./service";
+import { authPlugin, jwtAccessSetup, jwtRefreshSetup, adminGuard } from "@plugin";
 import { rateLimit } from "elysia-rate-limit";
 import { schemaResponseError, schemaResponseSuccess } from "@/shared";
 
@@ -220,4 +222,26 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes", det
       description: "Mengakhiri sesi pengguna secara permanen. Endpoint ini akan menghapus jejak `refreshToken` yang ada di database demi keamanan, sekaligus memberikan instruksi kepada browser untuk memusnahkan cookie sesi pengguna tersebut."
     }
   })
-  ;
+  .use(adminGuard)
+  .post("/cashier", async ({ tenantId, body, set }) => {
+    const result = await registerCashier(tenantId, body);
+
+    set.status = 201;
+
+    return {
+      success: true,
+      message: `Cashier ${result.name} registered succesfully`,
+      data: result
+    }
+  }, {
+    body: schemaBodyRegisterCashier,
+    response: {
+      201: schemaResponseRegisterCashier,
+      400: schemaResponseError,
+      409: schemaResponseError,
+    },
+    detail: {
+      summary: "Daftarkan Kasir Baru (Staf)",
+      description: "Mendaftarkan akun staf/kasir baru untuk toko. Akun ini secara otomatis akan diikat ke `tenantId` yang sama dengan milik Admin pembuatnya.\n\n🚨 **Perhatian:** Dilindungi ketat oleh `adminGuard` dan hanya bisa diakses oleh **Admin**."
+    }
+  });

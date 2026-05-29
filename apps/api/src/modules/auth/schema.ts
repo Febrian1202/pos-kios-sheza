@@ -14,41 +14,55 @@ const SAFE_TEXT_ERROR = "Only letters, numbers, spaces, periods, commas, hyphens
 // --- Request Schemas ---
 
 export const schemaBodyLogin = t.Object({
-  email: t.String({ 
-    format: "email", 
-    error: validationDetail("Email is not valid") 
+  email: t.String({
+    format: "email",
+    error: validationDetail("Email is not valid")
   }),
   password: t.String({
     error: validationDetail("Password is required"),
   }),
 });
 
-const nameSchema = (label: string) => t.String({ 
-  minLength: 3, 
-  pattern: REGEX_SAFE_TEXT, 
-  error: validationDetail(`${label} must be at least 3 characters. ${SAFE_TEXT_ERROR}`) 
+const nameSchema = (label: string) => t.String({
+  minLength: 3,
+  pattern: REGEX_SAFE_TEXT,
+  error: validationDetail(`${label} must be at least 3 characters. ${SAFE_TEXT_ERROR}`)
 });
 
 export const schemaBodyRegister = t.Object({
   storeName: nameSchema("Store name"),
   userName: nameSchema("Admin name"),
-  email: t.String({ 
-    format: "email", 
-    error: validationDetail("Email format is not valid") 
+  email: t.String({
+    format: "email",
+    error: validationDetail("Email format is not valid")
   }),
-  password: t.String({ 
-    minLength: 6, 
-    error: validationDetail("Password must be at least 6 characters") 
+  password: t.String({
+    minLength: 6,
+    error: validationDetail("Password must be at least 6 characters")
   })
 });
 
 export type ArgsRegister = Static<typeof schemaBodyRegister>;
 
 export const schemaCookie = t.Cookie({
-  refreshToken: t.Optional(t.String({ 
-    error: validationDetail("Token invalid") 
+  refreshToken: t.Optional(t.String({
+    error: validationDetail("Token invalid")
   }))
 })
+
+export const schemaBodyRegisterCashier = t.Object({
+  name: nameSchema("Cashier name"),
+  email: t.String({
+    format: "email",
+    error: validationDetail("Email format is not valid")
+  }),
+  password: t.String({
+    minLength: 6,
+    error: validationDetail("Password must be atleast 6 characters")
+  })
+})
+
+export type ArgsRegisterCashier = Static<typeof schemaBodyRegisterCashier>;
 
 // --- Response Schemas ---
 
@@ -88,3 +102,5 @@ export const schemaResponseRefresh = withSuccess(
 )
 
 export const schemaResponseMe = withSuccess(schemaUser)
+
+export const schemaResponseRegisterCashier = withSuccess(schemaUser);
