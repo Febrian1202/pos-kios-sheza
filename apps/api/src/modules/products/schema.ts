@@ -3,26 +3,38 @@ import { schemaResponseSuccess, withSuccess } from "@/shared";
 import { createInsertSchema, createSelectSchema } from "drizzle-typebox";
 import { validationDetail, t, type Static } from "elysia";
 
+// --- Constants ---
+const REGEX_PRODUCT_NAME = "^[a-zA-Z0-9 .,'\\-()/%+&]+$";
+const REGEX_BARCODE = "^[a-zA-Z0-9_-]+$";
+
+// --- Request Schemas ---
+
 export const schemaQueryProduct = t.Object({
-  search: t.Optional(t.String({ error: validationDetail("Search must be in string") })),
-  barcode: t.Optional(t.String({ error: validationDetail("Barcode must be in string") })),
-  category_id: t.Optional(t.String({ error: validationDetail("Category must be in string") })),
+  search: t.Optional(t.String({ error: validationDetail("Search must be a string") })),
+  barcode: t.Optional(t.String({ error: validationDetail("Barcode must be a string") })),
+  category_id: t.Optional(t.String({ error: validationDetail("Category ID must be a string") })),
 });
 
-export const schemaQueryProductDetail = t.Object({
+export const schemaParamsId = t.Object({
   id: t.String({
     format: "uuid",
-    error: validationDetail("Product ID format doesn't valid (must be UUID)"),
+    error: validationDetail("ID format is not valid (must be UUID)"),
   }),
 });
 
-// Regex
-const regexProductName = "^[a-zA-Z0-9 .,'\\-()/%+&]+$";
-const regexBarcode = "^[a-zA-Z0-9_-]+$";
+// Alias for backward compatibility or semantic clarity if needed
+export const schemaQueryProductDetail = schemaParamsId;
+export const schemaQueryUpdateProduct = schemaParamsId;
 
 const unfilteredBodyProduct = createInsertSchema(products, {
-  barcode: t.Optional(t.String({ pattern: regexBarcode, error: validationDetail("The barcode may only contain letters, numbers, hyphens, and underscores.") })),
-  name: t.String({ pattern: regexProductName, error: validationDetail("The product name may only contain letters, numbers, and basic symbols.") })
+  barcode: t.Optional(t.String({ 
+    pattern: REGEX_BARCODE, 
+    error: validationDetail("The barcode may only contain letters, numbers, hyphens, and underscores.") 
+  })),
+  name: t.String({ 
+    pattern: REGEX_PRODUCT_NAME, 
+    error: validationDetail("The product name may only contain letters, numbers, and basic symbols.") 
+  })
 });
 
 export const schemaBodyProduct = t.Omit(unfilteredBodyProduct, ["id", "createdAt", "updatedAt", "isActive", "slug", "tenantId"]);
@@ -31,13 +43,11 @@ export type ArgsProduct = Static<typeof schemaBodyProduct> & {
   tenantId: string,
 };
 
-export const schemaQueryUpdateProduct = t.Object({
-  id: t.String({ format: "uuid", error: validationDetail("Id must be in UUID") })
-})
-
 export const schemaBodyUpdateProduct = t.Partial(schemaBodyProduct);
 
 export type ArgsProductUpdate = Static<typeof schemaBodyUpdateProduct>
+
+// --- Response Schemas ---
 
 const baseProduct = createSelectSchema(products)
 

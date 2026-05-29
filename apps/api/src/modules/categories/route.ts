@@ -1,7 +1,18 @@
 import { authPlugin, adminGuard } from "@/plugins";
 import Elysia from "elysia";
-import { schemaParamsCategory, schemaQueryCategory, schemaBodyCategory, schemaBodyCategoryUpdate } from "./schema";
+import {
+  schemaParamsCategory,
+  schemaQueryCategory,
+  schemaBodyCategory,
+  schemaBodyCategoryUpdate,
+  schemaResponseGet,
+  schemaResponseGetDetail,
+  schemaResponsePost,
+  schemaResponsePatch,
+  schemaResponseDelete
+} from "./schema";
 import { getCategory, getCategoryDetail, postCategory, updateCategory, deleteCategory } from "./service";
+import { schemaResponseError } from "@/shared";
 
 export const categoriesRoutes = new Elysia({ prefix: "/category", name: "Category Routes", tags: ["Category Routes"] })
   .use(authPlugin)
@@ -15,6 +26,14 @@ export const categoriesRoutes = new Elysia({ prefix: "/category", name: "Categor
     }
   }, {
     query: schemaQueryCategory,
+    response: {
+      200: schemaResponseGet,
+      400: schemaResponseError
+    },
+    detail: {
+      summary: "Daftar Kategori Produk",
+      description: "Mengambil daftar seluruh kategori produk yang terdaftar di toko. Endpoint ini sangat ringan dan mendukung pencarian nama kategori menggunakan parameter *query* `search`."
+    }
   })
   .get("/:id", async ({ params: { id }, tenantId }) => {
     const result = await getCategoryDetail(id, tenantId);
@@ -26,6 +45,14 @@ export const categoriesRoutes = new Elysia({ prefix: "/category", name: "Categor
     }
   }, {
     params: schemaParamsCategory,
+    response: {
+      200: schemaResponseGetDetail,
+      400: schemaResponseError
+    },
+    detail: {
+      summary: "Detail Kategori",
+      description: "Mengambil informasi detail spesifik dari satu kategori berdasarkan ID (UUID). Berguna jika kamu perlu memvalidasi apakah sebuah kategori masih ada di database."
+    }
   })
   .use(adminGuard)
   .post("/", async ({ body: { name }, tenantId, set }) => {
@@ -40,6 +67,14 @@ export const categoriesRoutes = new Elysia({ prefix: "/category", name: "Categor
     }
   }, {
     body: schemaBodyCategory,
+    response: {
+      201: schemaResponsePost,
+      400: schemaResponseError
+    },
+    detail: {
+      summary: "Tambah Kategori Baru",
+      description: "Menambahkan kategori produk baru. Nama kategori harus unik di dalam satu toko.\n\n🚨 **Perhatian:** Hanya bisa diakses oleh **Admin**."
+    }
   })
   .patch("/:id", async ({ params: { id }, tenantId, body }) => {
     const result = await updateCategory(id, tenantId, body);
@@ -52,6 +87,14 @@ export const categoriesRoutes = new Elysia({ prefix: "/category", name: "Categor
   }, {
     params: schemaParamsCategory,
     body: schemaBodyCategoryUpdate,
+    response: {
+      200: schemaResponsePatch,
+      400: schemaResponseError
+    },
+    detail: {
+      summary: "Perbarui Kategori",
+      description: "Mengubah informasi kategori yang sudah ada.\n\n🚨 **Perhatian:** Hanya bisa diakses oleh **Admin**."
+    }
   })
   .delete("/:id", async ({ params: { id }, tenantId }) => {
     await deleteCategory(id, tenantId);
@@ -62,4 +105,12 @@ export const categoriesRoutes = new Elysia({ prefix: "/category", name: "Categor
     }
   }, {
     params: schemaParamsCategory,
+    response: {
+      200: schemaResponseDelete,
+      400: schemaResponseError
+    },
+    detail: {
+      summary: "Hapus Kategori",
+      description: "Menghapus kategori produk. Kategori tidak bisa dihapus jika masih ada produk yang menggunakannya.\n\n🚨 **Perhatian:** Hanya bisa diakses oleh **Admin**."
+    }
   });

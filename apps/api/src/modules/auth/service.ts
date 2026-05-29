@@ -104,7 +104,13 @@ export const registerBusiness = async (args: ArgsRegister) => {
       passwordHash: hashedPassword,
       role: "admin",
       isActive: true,
-    }).returning({ id: users.id, name: users.name, email: users.email, role: users.role });
+    }).returning({ 
+      id: users.id, 
+      name: users.name, 
+      email: users.email, 
+      role: users.role, 
+      tenantId: users.tenantId 
+    });
 
     return {
       store: newTenant,

@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import {
   authRoutes,
   brilinkRoutes,
@@ -33,7 +33,17 @@ const app = new Elysia()
       return { success: false, message: "Something wrong with the server" }
     }
   })
-  .get("/health", () => ({ status: 'ok', ts: Date.now() }))
+  .get("/health", () => ({ status: 'ok', ts: Date.now() }), {
+    response: t.Object({
+      status: t.String(),
+      ts: t.Number()
+    }),
+    detail: {
+      summary: "Server Health Check",
+      description: "Mengecek status kesehatan server dan sinkronisasi waktu (timestamp).",
+      tags: ["System"]
+    }
+  })
   .use(authRoutes)
   .use(productRoutes)
   .use(categoriesRoutes)

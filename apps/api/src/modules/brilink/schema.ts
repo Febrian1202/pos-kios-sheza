@@ -3,17 +3,24 @@ import { withSuccess } from "@/shared";
 import { createInsertSchema, createSelectSchema } from "drizzle-typebox";
 import { t, validationDetail, type Static } from "elysia";
 
-const regexSafeNotes = "^[^<>{}]+$";
-const regexSafeRefNumber = "^[a-zA-Z0-9]+$";
+// --- Constants & Helpers ---
+const REGEX_SAFE_NOTES = "^[^<>{}]+$";
+const REGEX_ALPHANUMERIC = "^[a-zA-Z0-9]+$";
 
-const trxType = t.Union([
+const TRX_TYPES = [
   t.Literal("transfer"),
   t.Literal("tarik_tunai"),
   t.Literal("pembayaran"),
   t.Literal("e-wallet"),
   t.Literal("other"),
-], { error: validationDetail("Trx Type invalid!") });
+];
 
+const createTrxTypeSchema = (errorMessage = "Trx Type invalid!") => 
+  t.Union(TRX_TYPES, { error: validationDetail(errorMessage) });
+
+const trxType = createTrxTypeSchema();
+
+// --- Request Schemas ---
 
 const baseBrilinkSchema = createInsertSchema(brilinkTransactions, {
   trxType: trxType,
@@ -21,11 +28,11 @@ const baseBrilinkSchema = createInsertSchema(brilinkTransactions, {
   customerAmount: t.Numeric({ minimum: 0, error: validationDetail("Customer amount invalid!") }),
   adminFeeCharged: t.Numeric({ minimum: 0, error: validationDetail("Admin fee invalid!") }),
   notes: t.Optional(t.String({
-    pattern: regexSafeNotes,
+    pattern: REGEX_SAFE_NOTES,
     error: validationDetail("Notes must not contain the characters <, >, {, or }.")
   })),
   referenceNumber: t.String({
-    pattern: regexSafeRefNumber,
+    pattern: REGEX_ALPHANUMERIC,
     error: validationDetail("The reference number may only contain letters and numbers.")
   })
 })
@@ -36,15 +43,7 @@ export type ArgsBrilink = Static<typeof schemaBodyBrilink>
 
 export const schemaQueryBrilink = t.Object({
   date: t.Optional(t.String({ format: "date", error: validationDetail("Date invalid!") })),
-  type: t.Optional(t.Union([
-    t.Literal("transfer"),
-    t.Literal("tarik_tunai"),
-    t.Literal("pembayaran"),
-    t.Literal("e-wallet"),
-    t.Literal("other"),
-  ], {
-    error: validationDetail("Type invalid!")
-  }))
+  type: t.Optional(createTrxTypeSchema("Type invalid!"))
 })
 
 export type ArgsGetBrilink = Static<typeof schemaQueryBrilink>
@@ -61,7 +60,10 @@ export const schemaParamsDetailBrilink = t.Object({
 
 export type ArgsGetBrilinkDetail = Static<typeof schemaParamsDetailBrilink>
 
+// --- Response Schemas ---
+
 const baseBrilink = createSelectSchema(brilinkTransactions)
+
 const brilinkWithCashier = t.Composite([
   t.Omit(baseBrilink, ["tenantId"]),
   t.Object({
@@ -72,7 +74,7 @@ const brilinkWithCashier = t.Composite([
 ])
 
 export const schemaResponseGet = withSuccess(
-  brilinkWithCashier
+  t.Array(brilinkWithCashier)
 )
 
 export const schemaResponseGetSummary = withSuccess(

@@ -1,8 +1,14 @@
 import { adminGuard, authPlugin } from "@/plugins";
 import Elysia from "elysia";
 import { SummaryNotFoundError } from "./error";
-import { schemaQueryDailySummary, schemaQueryMonthlySummary } from "./schema";
+import {
+  schemaQueryDailySummary,
+  schemaQueryMonthlySummary,
+  schemaResponseDaily,
+  schemaResponseMonthly
+} from "./schema";
 import { getDailySummary, getMonthlySummary } from "./service";
+import { schemaResponseError } from "@/shared";
 
 export const reportRoutes = new Elysia({ prefix: "/reports", name: "Report Routes", tags: ["Report Routes"] })
   .error({
@@ -26,13 +32,13 @@ export const reportRoutes = new Elysia({ prefix: "/reports", name: "Report Route
     }
   }, {
     query: schemaQueryDailySummary,
+    response: {
+      200: schemaResponseDaily,
+      404: schemaResponseError
+    },
     detail: {
       summary: "Laporan Harian",
-      description: "Endpoint digunakan untuk mendapatkan laporan harian.",
-      responses: {
-        200: { description: "Laporan harian berhasil didapatkan" },
-        404: { description: "Laporan harian tidak ditemukan" }
-      }
+      description: "Mendapatkan ringkasan performa toko untuk hari tertentu. Mencakup total pendapatan ritel, komisi Brilink, dan laba kotor. Jika data belum tersedia, sistem akan mencoba men-generate-nya secara otomatis."
     }
   })
   .get("/monthly", async ({ tenantId, query }) => {
@@ -44,6 +50,14 @@ export const reportRoutes = new Elysia({ prefix: "/reports", name: "Report Route
       data: result
     }
   }, {
-    query: schemaQueryMonthlySummary
+    query: schemaQueryMonthlySummary,
+    response: {
+      200: schemaResponseMonthly,
+      404: schemaResponseError
+    },
+    detail: {
+      summary: "Laporan Bulanan",
+      description: "Mendapatkan ringkasan performa toko untuk bulan tertentu berdasarkan agregasi laporan harian."
+    }
   })
 
