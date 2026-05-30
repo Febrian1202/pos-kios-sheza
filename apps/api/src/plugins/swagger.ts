@@ -8,6 +8,7 @@ export const swaggerPlugin = new Elysia()
       info: { title: "SaaS POS API", version: '1.0.0' },
       tags: [
         { name: "Auth Routes", description: "Endpoint untuk autentinkasi" },
+        { name: "User Routes", description: "Endpoint untuk mengelola data user (cashier, Admin only)" },
         { name: "Transaction Routes", description: "Endpoint untuk transaksi retail" },
         { name: "Brilink Routes", description: "Endpoint untuk transaksi brilink" },
         { name: "Product Routes", description: "Endpoint untuk pengelolaan produk" },

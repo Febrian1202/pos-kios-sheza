@@ -3,15 +3,3 @@ export class LoginError extends Error {
     super(message);
   }
 }
-
-export class SessionError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-export class RegisterError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}

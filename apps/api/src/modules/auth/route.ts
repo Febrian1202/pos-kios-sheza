@@ -5,15 +5,23 @@ import {
   schemaCookie,
   schemaResponseLogin,
   schemaResponseRegister,
-  schemaResponseRefresh,
-  schemaResponseMe,
-  schemaBodyRegisterCashier,
-  schemaResponseRegisterCashier,
-  schemaResponseGetCashier
+  schemaResponseRefresh
 } from "./schema";
-import { LoginError, RegisterError, SessionError } from "./error";
-import { getCashier, getUser, registerBusiness, registerCashier, updateRefreshToken, verifyUsers } from "./service";
-import { authPlugin, jwtAccessSetup, jwtRefreshSetup, adminGuard } from "@plugin";
+import { LoginError } from "./error";
+import {
+  registerBusiness,
+  updateRefreshToken,
+  verifyUsers
+} from "./service";
+import { getUser } from "@modules/users/service";
+import {
+  authPlugin,
+  jwtAccessSetup,
+  jwtRefreshSetup,
+  adminGuard,
+  SessionError,
+  RegisterError
+} from "@plugin";
 import { rateLimit } from "elysia-rate-limit";
 import { schemaResponseError, schemaResponseSuccess } from "@/shared";
 
@@ -25,16 +33,10 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes", det
   }))
   .error({
     LOGIN_ERROR: LoginError,
-    SESSION_ERROR: SessionError,
-    REGISTER_ERROR: RegisterError,
   })
   .onError(({ code, set, error }) => {
-    if (code === "LOGIN_ERROR" || code === "SESSION_ERROR") {
+    if (code === "LOGIN_ERROR") {
       set.status = 401;
-      return { success: false, message: error.message };
-    }
-    if (code === "REGISTER_ERROR") {
-      set.status = 500;
       return { success: false, message: error.message };
     }
   })
@@ -188,23 +190,6 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes", det
     }
   })
   .use(authPlugin)
-  .get("/me", async ({ userId }) => {
-    const user = await getUser(userId);
-
-    return {
-      success: true,
-      message: "Get profile success",
-      data: user,
-    }
-  }, {
-    response: {
-      200: schemaResponseMe
-    },
-    detail: {
-      summary: "Ambil Profil Pengguna Aktif",
-      description: "Mengambil data profil pengguna secara lengkap berdasarkan `accessToken` yang dikirimkan pada *header* Authorization. Biasanya digunakan oleh frontend untuk menampilkan nama dan hak akses kasir yang sedang bertugas di mesin kasir."
-    }
-  })
   .post("/logout", async ({ userId, cookie: { refreshToken } }) => {
     await updateRefreshToken(userId, null);
 
@@ -224,43 +209,4 @@ export const authRoutes = new Elysia({ prefix: "/auth", name: "Auth Routes", det
     }
   })
   .use(adminGuard)
-  .post("/cashier", async ({ tenantId, body, set }) => {
-    const result = await registerCashier(tenantId, body);
 
-    set.status = 201;
-
-    return {
-      success: true,
-      message: `Cashier ${result.name} registered succesfully`,
-      data: result
-    }
-  }, {
-    body: schemaBodyRegisterCashier,
-    response: {
-      201: schemaResponseRegisterCashier,
-      401: schemaResponseError,
-      409: schemaResponseError,
-    },
-    detail: {
-      summary: "Daftarkan Kasir Baru (Staf)",
-      description: "Mendaftarkan akun staf/kasir baru untuk toko. Akun ini secara otomatis akan diikat ke `tenantId` yang sama dengan milik Admin pembuatnya.\n\n🚨 **Perhatian:** Dilindungi ketat oleh `adminGuard` dan hanya bisa diakses oleh **Admin**."
-    }
-  })
-  .get("/cashiers", async ({ tenantId }) => {
-    const result = await getCashier(tenantId);
-
-    return {
-      success: true,
-      message: "Get cashiers data success",
-      data: result
-    }
-  }, {
-    response: {
-      200: schemaResponseGetCashier,
-      400: schemaResponseError
-    },
-    detail: {
-      summary: "Daftar Semua Kasir (Staf)",
-      description: "Mengambil seluruh daftar akun kasir/staf yang bekerja di toko milik Admin yang sedang login aktif. Memastikan isolasi data antar toko (*tenant*) tetap terjaga rapat.\n\n🚨 **Perhatian:** Hanya bisa diakses oleh **Admin**."
-    }
-  });

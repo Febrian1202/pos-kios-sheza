@@ -1,26 +1,5 @@
-import { withSuccess } from "@/shared";
 import { t, validationDetail, type Static } from "elysia";
-
-// --- Constants ---
-
-export enum UserRole {
-  ADMIN = "admin",
-  CASHIER = "cashier"
-}
-
-export const schemaUser = t.Object({
-  id: t.String({ format: "uuid" }),
-  name: t.String(),
-  email: t.String({ format: "email" }),
-  role: t.Enum(UserRole),
-  tenantId: t.String({ format: "uuid" })
-});
-
-export const schemaTenant = t.Object({
-  id: t.String({ format: "uuid" }),
-  name: t.String(),
-  slug: t.String()
-});
+import { schemaUser, schemaTenant, withSuccess } from "@shared";
 
 const REGEX_SAFE_TEXT = "^[a-zA-Z0-9 .,'-]+$";
 const SAFE_TEXT_ERROR = "Only letters, numbers, spaces, periods, commas, hyphens, and quotation marks are allowed.";
@@ -64,20 +43,6 @@ export const schemaCookie = t.Cookie({
   }))
 })
 
-export const schemaBodyRegisterCashier = t.Object({
-  name: nameSchema("Cashier name"),
-  email: t.String({
-    format: "email",
-    error: validationDetail("Email format is not valid")
-  }),
-  password: t.String({
-    minLength: 6,
-    error: validationDetail("Password must be atleast 6 characters")
-  })
-})
-
-export type ArgsRegisterCashier = Static<typeof schemaBodyRegisterCashier>;
-
 
 // --- Response Schemas ---
 
@@ -101,9 +66,3 @@ export const schemaResponseRefresh = withSuccess(
     accessToken: t.String()
   })
 )
-
-export const schemaResponseMe = withSuccess(schemaUser)
-
-export const schemaResponseRegisterCashier = withSuccess(schemaUser);
-
-export const schemaResponseGetCashier = withSuccess(t.Array(schemaUser));

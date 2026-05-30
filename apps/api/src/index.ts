@@ -5,9 +5,16 @@ import {
   categoriesRoutes,
   productRoutes,
   transactionRoutes,
-  reportRoutes
+  reportRoutes,
+  usersRoutes
 } from "@modules/index.routes";
-import { ConflictError, swaggerPlugin, corsPlugin } from "@plugin";
+import {
+  ConflictError,
+  SessionError,
+  RegisterError,
+  swaggerPlugin,
+  corsPlugin
+} from "@plugin";
 import { startDailySummaryJob } from "@jobs"
 import { rateLimit } from "elysia-rate-limit";
 
@@ -20,11 +27,22 @@ const app = new Elysia()
   }))
   .use(corsPlugin)
   .error({
-    "CONFLICT": ConflictError,
+    SESSION_ERROR: SessionError,
+    REGISTER_ERROR: RegisterError,
+    CONFLICT: ConflictError,
   })
   .onError(({ code, set, error }) => {
+    if (code === "SESSION_ERROR") {
+      set.status = 401
+      return { success: false, message: error.message }
+    }
     if (code === "CONFLICT") {
       set.status = 409;
+      return { success: false, message: error.message }
+    }
+
+    if (code === "REGISTER_ERROR") {
+      set.status = 500;
       return { success: false, message: error.message }
     }
 
@@ -45,6 +63,7 @@ const app = new Elysia()
     }
   })
   .use(authRoutes)
+  .use(usersRoutes)
   .use(productRoutes)
   .use(categoriesRoutes)
   .use(transactionRoutes)

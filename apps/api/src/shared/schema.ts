@@ -1,5 +1,26 @@
 import { t, type TSchema } from "elysia"
 
+// --- Constants ---
+
+export enum UserRole {
+  ADMIN = "admin",
+  CASHIER = "cashier"
+}
+
+export const schemaUser = t.Object({
+  id: t.String({ format: "uuid" }),
+  name: t.String(),
+  email: t.String({ format: "email" }),
+  role: t.Enum(UserRole),
+  tenantId: t.String({ format: "uuid" })
+});
+
+export const schemaTenant = t.Object({
+  id: t.String({ format: "uuid" }),
+  name: t.String(),
+  slug: t.String()
+});
+
 export const schemaResponseError = t.Object({
   success: t.Boolean({ default: false }),
   message: t.String(),
